@@ -16,6 +16,40 @@ class Projects extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return view('admin/projects/create', [
+            'clients' => (new UserModel())->where('role', 'client')->where('active', true)->orderBy('name')->findAll(),
+        ]);
+    }
+
+    public function store()
+    {
+        $rules = [
+            'client_id'   => 'required|is_natural_no_zero',
+            'name'        => 'required|min_length[2]|max_length[200]',
+            'type'        => 'required|in_list[site,app,system,other]',
+            'description' => 'permit_empty|max_length[2000]',
+            'deadline'    => 'permit_empty|valid_date[Y-m-d]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $id = (new ProjectModel())->insert([
+            'client_id'   => $this->request->getPost('client_id'),
+            'name'        => $this->request->getPost('name'),
+            'type'        => $this->request->getPost('type'),
+            'description' => $this->request->getPost('description'),
+            'deadline'    => $this->request->getPost('deadline') ?: null,
+            'status'      => 'planning',
+            'progress'    => 0,
+        ]);
+
+        return redirect()->to("/admin/projects/{$id}")->with('success', 'Projeto criado com sucesso.');
+    }
+
     public function show(int $id)
     {
         $project = (new ProjectModel())->find($id);

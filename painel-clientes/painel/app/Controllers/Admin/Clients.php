@@ -46,6 +46,28 @@ class Clients extends Controller
             'user_role' => 'client',
         ]);
 
-        return redirect()->to('/app');
+        return redirect()->to('http://localhost:8081/app');
+    }
+
+    public function stopImpersonating()
+    {
+        $adminId = session()->get('impersonating');
+        if (! $adminId) {
+            return redirect()->to('/admin');
+        }
+
+        $admin = (new UserModel())->find($adminId);
+        if (! $admin || $admin['role'] !== 'admin') {
+            return redirect()->to('/login');
+        }
+
+        session()->remove('impersonating');
+        session()->set([
+            'user_id'   => $admin['id'],
+            'user_name' => $admin['name'],
+            'user_role' => 'admin',
+        ]);
+
+        return redirect()->to('http://localhost:8080/admin/clients');
     }
 }

@@ -11,6 +11,7 @@ $routes->post('login',         'Auth::login');
 $routes->get('logout',         'Auth::logout');
 $routes->get('register',       'Auth::registerForm');
 $routes->post('register',      'Auth::register');
+$routes->get('admin/stop-impersonating', 'Admin\Clients::stopImpersonating');
 
 // ── Painel Admin ────────────────────────────────────────────────────────────
 // Acessível em localhost:8080  (Nginx envia APP_SECTION=admin)
@@ -20,6 +21,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('clients/(:num)',       'Admin\Clients::show/$1');
     $routes->get('clients/(:num)/login', 'Admin\Clients::loginAs/$1');
     $routes->get('projects',             'Admin\Projects::index');
+    $routes->get('projects/new',         'Admin\Projects::create');
+    $routes->post('projects',            'Admin\Projects::store');
     $routes->get('projects/(:num)',      'Admin\Projects::show/$1');
     $routes->post('projects/(:num)',     'Admin\Projects::update/$1');
     $routes->get('support',              'Admin\Support::index');

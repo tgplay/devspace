@@ -1,7 +1,12 @@
 <?= $this->extend('layouts/admin') ?>
 <?= $this->section('content') ?>
 
-<h4 class="mb-4">Projetos</h4>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Projetos</h4>
+    <a href="/admin/projects/new" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Novo Projeto
+    </a>
+</div>
 
 <div class="card">
     <div class="card-body p-0">

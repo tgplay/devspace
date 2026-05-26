@@ -47,7 +47,16 @@
         </div>
     </div>
     <div class="main-content">
-        <?php if (session()->getFlashdata('success')): ?>
+        <?php if (session()->get('impersonating')): ?>
+        <div class="alert alert-warning d-flex align-items-center mb-4 rounded-0 mb-0 px-4 py-2" style="border-left:4px solid #f59e0b">
+            <i class="bi bi-eye-fill me-2"></i>
+            Você está visualizando o painel como <strong class="mx-1"><?= esc(session()->get('user_name')) ?></strong>.
+            <a href="http://localhost:8080/admin/stop-impersonating" class="btn btn-sm btn-warning ms-auto">
+                <i class="bi bi-arrow-left me-1"></i> Voltar ao Admin
+            </a>
+        </div>
+    <?php endif ?>
+    <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success alert-dismissible fade show">
                 <?= esc(session()->getFlashdata('success')) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
