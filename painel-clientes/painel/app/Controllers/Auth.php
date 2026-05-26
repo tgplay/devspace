@@ -26,14 +26,14 @@ class Auth extends Controller
             return redirect()->back()->with('error', 'E-mail ou senha inválidos.');
         }
 
-        $section = $this->request->server('APP_SECTION');
+        $section = $this->request->getServer('APP_SECTION');
 
         if ($section === 'admin' && $user['role'] !== 'admin') {
-            return redirect()->back()->with('error', 'Acesso restrito. Use o portal do cliente em localhost:8081.');
+            return redirect()->back()->with('error', 'Suas credenciais não têm acesso a este portal.');
         }
 
         if ($section === 'client' && $user['role'] !== 'client') {
-            return redirect()->back()->with('error', 'Acesso restrito. Use o portal administrativo em localhost:8080.');
+            return redirect()->back()->with('error', 'Suas credenciais não têm acesso a este portal.');
         }
 
         session()->set([
