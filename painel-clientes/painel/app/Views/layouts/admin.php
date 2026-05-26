@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= $title ?? 'Admin' ?> — Painel Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .sidebar { width: 240px; min-height: 100vh; background: #212529; }
+        .sidebar a { color: #adb5bd; text-decoration: none; display: block; padding: 10px 20px; }
+        .sidebar a:hover, .sidebar a.active { color: #fff; background: #343a40; }
+        .main-content { flex: 1; padding: 30px; background: #f8f9fa; min-height: 100vh; }
+        .sidebar .nav-label { font-size: 0.7rem; color: #6c757d; padding: 16px 20px 4px; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    <div class="sidebar d-flex flex-column">
+        <div class="p-4 border-bottom border-secondary">
+            <span class="text-white fw-bold fs-5">Admin</span>
+            <div class="text-muted small mt-1"><?= esc(session()->get('user_name')) ?></div>
+        </div>
+        <nav class="flex-grow-1 pt-2">
+            <div class="nav-label">Geral</div>
+            <a href="/admin" class="<?= uri_string() === 'admin' ? 'active' : '' ?>">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="/admin/clients" class="<?= str_starts_with(uri_string(), 'admin/clients') ? 'active' : '' ?>">
+                <i class="bi bi-people me-2"></i> Clientes
+            </a>
+            <a href="/admin/projects" class="<?= str_starts_with(uri_string(), 'admin/projects') ? 'active' : '' ?>">
+                <i class="bi bi-folder me-2"></i> Projetos
+            </a>
+            <div class="nav-label">Suporte</div>
+            <a href="/admin/support" class="<?= str_starts_with(uri_string(), 'admin/support') ? 'active' : '' ?>">
+                <i class="bi bi-headset me-2"></i> Chamados
+            </a>
+        </nav>
+        <div class="p-3 border-top border-secondary">
+            <a href="/logout" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i> Sair</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?= esc(session()->getFlashdata('success')) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= esc(session()->getFlashdata('error')) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif ?>
+        <?= $this->renderSection('content') ?>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

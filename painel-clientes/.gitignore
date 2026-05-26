@@ -1,0 +1,22 @@
+# Dependências PHP
+painel/vendor/
+
+# Arquivos de ambiente (contêm credenciais)
+painel/.env
+
+# Arquivos gerados em runtime
+painel/writable/cache/*
+painel/writable/logs/*
+painel/writable/session/*
+painel/writable/uploads/*
+!painel/writable/cache/.gitkeep
+!painel/writable/logs/.gitkeep
+!painel/writable/session/.gitkeep
+!painel/writable/uploads/.gitkeep
+
+# Scripts temporários
+painel/update_admin.php
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

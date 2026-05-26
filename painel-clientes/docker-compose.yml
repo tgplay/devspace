@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./painel:/var/www/painel:ro
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./painel:/var/www/painel
+    command: sh -c "chmod -R 777 /var/www/painel/writable && php-fpm"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-painel_clientes}
+      POSTGRES_USER: ${DB_USER:-painel_user}
+      POSTGRES_PASSWORD: ${DB_PASS:-painel_pass}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-painel_user} -d ${DB_NAME:-painel_clientes}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:

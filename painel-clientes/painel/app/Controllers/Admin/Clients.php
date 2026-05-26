@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Controllers\Admin;
+
+use App\Models\InvoiceModel;
+use App\Models\ProjectModel;
+use App\Models\TicketModel;
+use App\Models\UserModel;
+use CodeIgniter\Controller;
+
+class Clients extends Controller
+{
+    public function index()
+    {
+        return view('admin/clients/index', [
+            'clients' => (new UserModel())->where('role', 'client')->orderBy('name')->findAll(),
+        ]);
+    }
+
+    public function show(int $id)
+    {
+        $client = (new UserModel())->find($id);
+        if (! $client || $client['role'] !== 'client') {
+            return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
+        }
+
+        return view('admin/clients/show', [
+            'client'   => $client,
+            'projects' => (new ProjectModel())->where('client_id', $id)->findAll(),
+            'tickets'  => (new TicketModel())->where('client_id', $id)->orderBy('created_at', 'DESC')->findAll(5),
+            'invoices' => (new InvoiceModel())->where('client_id', $id)->orderBy('due_date', 'DESC')->findAll(5),
+        ]);
+    }
+
+    public function loginAs(int $id)
+    {
+        $client = (new UserModel())->find($id);
+        if (! $client || $client['role'] !== 'client') {
+            return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
+        }
+
+        session()->set('impersonating', session()->get('user_id'));
+        session()->set([
+            'user_id'   => $client['id'],
+            'user_name' => $client['name'],
+            'user_role' => 'client',
+        ]);
+
+        return redirect()->to('/app');
+    }
+}
