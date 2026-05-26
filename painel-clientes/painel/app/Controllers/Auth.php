@@ -26,6 +26,16 @@ class Auth extends Controller
             return redirect()->back()->with('error', 'E-mail ou senha inválidos.');
         }
 
+        $section = $this->request->server('APP_SECTION');
+
+        if ($section === 'admin' && $user['role'] !== 'admin') {
+            return redirect()->back()->with('error', 'Acesso restrito. Use o portal do cliente em localhost:8081.');
+        }
+
+        if ($section === 'client' && $user['role'] !== 'client') {
+            return redirect()->back()->with('error', 'Acesso restrito. Use o portal administrativo em localhost:8080.');
+        }
+
         session()->set([
             'user_id'   => $user['id'],
             'user_name' => $user['name'],
@@ -71,7 +81,7 @@ class Auth extends Controller
     private function redirectByRole(): \CodeIgniter\HTTP\RedirectResponse
     {
         return session()->get('user_role') === 'admin'
-            ? redirect()->to('/admin')
-            : redirect()->to('/app');
+            ? redirect()->to('http://localhost:8080/admin')
+            : redirect()->to('http://localhost:8081/app');
     }
 }
