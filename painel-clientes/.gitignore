@@ -17,6 +17,11 @@ painel/writable/uploads/*
 # Scripts temporários
 painel/update_admin.php
 
+# Arquivos do CodeIgniter não necessários
+painel/builds
+painel/LICENSE
+painel/preload.php
+
 # Sistema operacional
 .DS_Store
 Thumbs.db
