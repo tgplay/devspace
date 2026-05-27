@@ -31,7 +31,8 @@
                 </li>
                 <li class="list-group-item">
                     <div class="text-muted small">Status</div>
-                    <?= $client['active'] ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
+                    <?php $ativo = filter_var($client['active'], FILTER_VALIDATE_BOOLEAN) ?>
+                    <?= $ativo ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
                 </li>
             </ul>
         </div>

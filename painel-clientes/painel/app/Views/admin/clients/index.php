@@ -39,6 +39,7 @@
                 </thead>
                 <tbody>
                     <?php foreach ($clients as $c): ?>
+                    <?php $ativo = filter_var($c['active'], FILTER_VALIDATE_BOOLEAN) ?>
                     <tr>
                         <td>
                             <input type="checkbox" name="ids[]" value="<?= $c['id'] ?>"
@@ -49,18 +50,17 @@
                         <td><?= esc($c['phone'] ?? '—') ?></td>
                         <td><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
                         <td>
-                            <?php if ($c['active']): ?>
+                            <?php if ($ativo): ?>
                                 <span class="badge text-bg-success">Ativo</span>
                             <?php else: ?>
                                 <span class="badge text-bg-secondary">Inativo</span>
                             <?php endif ?>
                         </td>
                         <td class="text-end">
-                            <!-- Toggle individual -->
                             <button type="button"
-                                    class="btn btn-sm <?= $c['active'] ? 'btn-outline-danger' : 'btn-outline-success' ?>"
-                                    onclick="toggleCliente(<?= $c['id'] ?>, <?= $c['active'] ? 'true' : 'false' ?>)">
-                                <?= $c['active'] ? 'Desativar' : 'Ativar' ?>
+                                    class="btn btn-sm <?= $ativo ? 'btn-outline-danger' : 'btn-outline-success' ?>"
+                                    onclick="toggleCliente(<?= $c['id'] ?>, <?= $ativo ? 'true' : 'false' ?>)">
+                                <?= $ativo ? 'Desativar' : 'Ativar' ?>
                             </button>
                             <a href="/admin/clients/<?= $c['id'] ?>" class="btn btn-sm btn-outline-primary">Ver</a>
                             <a href="/admin/clients/<?= $c['id'] ?>/login" class="btn btn-sm btn-outline-secondary">Entrar como</a>

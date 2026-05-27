@@ -39,9 +39,10 @@ class Clients extends Controller
             return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
         }
 
-        (new UserModel())->update($id, ['active' => ! $user['active']]);
+        $isActive = filter_var($user['active'], FILTER_VALIDATE_BOOLEAN);
+        (new UserModel())->update($id, ['active' => ! $isActive]);
 
-        $status = $user['active'] ? 'desativado' : 'ativado';
+        $status = $isActive ? 'desativado' : 'ativado';
         return redirect()->to('/admin/clients')->with('success', "Cliente {$status} com sucesso.");
     }
 
