@@ -17,9 +17,11 @@ $routes->get('admin/stop-impersonating', 'Admin\Clients::stopImpersonating');
 // Acessível em localhost:8080  (Nginx envia APP_SECTION=admin)
 $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('/',                    'Admin\Dashboard::index');
-    $routes->get('clients',              'Admin\Clients::index');
-    $routes->get('clients/(:num)',       'Admin\Clients::show/$1');
-    $routes->get('clients/(:num)/login', 'Admin\Clients::loginAs/$1');
+    $routes->get('clients',                    'Admin\Clients::index');
+    $routes->post('clients/(:num)/toggle',     'Admin\Clients::toggle/$1');
+    $routes->post('clients/bulk-toggle',       'Admin\Clients::bulkToggle');
+    $routes->get('clients/(:num)',             'Admin\Clients::show/$1');
+    $routes->get('clients/(:num)/login',       'Admin\Clients::loginAs/$1');
     $routes->get('projects',             'Admin\Projects::index');
     $routes->get('projects/new',         'Admin\Projects::create');
     $routes->post('projects',            'Admin\Projects::store');

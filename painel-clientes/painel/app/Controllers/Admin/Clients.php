@@ -32,6 +32,36 @@ class Clients extends Controller
         ]);
     }
 
+    public function toggle(int $id)
+    {
+        $user = (new UserModel())->find($id);
+        if (! $user || $user['role'] !== 'client') {
+            return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
+        }
+
+        (new UserModel())->update($id, ['active' => ! $user['active']]);
+
+        $status = $user['active'] ? 'desativado' : 'ativado';
+        return redirect()->to('/admin/clients')->with('success', "Cliente {$status} com sucesso.");
+    }
+
+    public function bulkToggle()
+    {
+        $ids    = $this->request->getPost('ids');
+        $action = $this->request->getPost('action');
+
+        if (empty($ids) || ! in_array($action, ['activate', 'deactivate'])) {
+            return redirect()->to('/admin/clients')->with('error', 'Selecione ao menos um cliente e uma ação.');
+        }
+
+        $active = $action === 'activate';
+        (new UserModel())->whereIn('id', $ids)->where('role', 'client')->set(['active' => $active])->update();
+
+        $label = $active ? 'ativados' : 'desativados';
+        $count = count($ids);
+        return redirect()->to('/admin/clients')->with('success', "{$count} cliente(s) {$label} com sucesso.");
+    }
+
     public function loginAs(int $id)
     {
         $client = (new UserModel())->find($id);
