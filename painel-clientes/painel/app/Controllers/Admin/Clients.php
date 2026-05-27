@@ -36,14 +36,19 @@ class Clients extends Controller
     {
         $user = (new UserModel())->find($id);
         if (! $user || $user['role'] !== 'client') {
-            return redirect()->to('/admin/clients')->with('error', 'Cliente não encontrado.');
+            return $this->response->setJSON(['success' => false, 'message' => 'Cliente não encontrado.']);
         }
 
-        $isActive = filter_var($user['active'], FILTER_VALIDATE_BOOLEAN);
-        (new UserModel())->update($id, ['active' => ! $isActive]);
+        $newActive = $this->request->getPost('active') === '1';
 
-        $status = $isActive ? 'desativado' : 'ativado';
-        return redirect()->to('/admin/clients')->with('success', "Cliente {$status} com sucesso.");
+        (new UserModel())->where('id', $id)->set(['active' => $newActive])->update();
+
+        $status = $newActive ? 'ativado' : 'desativado';
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Cliente {$status} com sucesso.",
+            'active'  => $newActive,
+        ]);
     }
 
     public function bulkToggle()
@@ -52,7 +57,7 @@ class Clients extends Controller
         $action = $this->request->getPost('action');
 
         if (empty($ids) || ! in_array($action, ['activate', 'deactivate'])) {
-            return redirect()->to('/admin/clients')->with('error', 'Selecione ao menos um cliente e uma ação.');
+            return $this->response->setJSON(['success' => false, 'message' => 'Selecione ao menos um cliente e uma ação.']);
         }
 
         $active = $action === 'activate';
@@ -60,7 +65,12 @@ class Clients extends Controller
 
         $label = $active ? 'ativados' : 'desativados';
         $count = count($ids);
-        return redirect()->to('/admin/clients')->with('success', "{$count} cliente(s) {$label} com sucesso.");
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "{$count} cliente(s) {$label} com sucesso.",
+            'active'  => $active,
+            'ids'     => array_map('intval', $ids),
+        ]);
     }
 
     public function loginAs(int $id)

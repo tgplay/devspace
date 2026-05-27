@@ -59,7 +59,10 @@
                         <td class="text-end">
                             <button type="button"
                                     class="btn btn-sm <?= $ativo ? 'btn-outline-danger' : 'btn-outline-success' ?>"
-                                    onclick="toggleCliente(<?= $c['id'] ?>, <?= $ativo ? 'true' : 'false' ?>)">
+                                    data-toggle="client"
+                                    data-id="<?= $c['id'] ?>"
+                                    data-active="<?= $ativo ? '1' : '0' ?>"
+                                    onclick="toggleCliente(this)">
                                 <?= $ativo ? 'Desativar' : 'Ativar' ?>
                             </button>
                             <a href="/admin/clients/<?= $c['id'] ?>" class="btn btn-sm btn-outline-primary">Ver</a>
@@ -76,21 +79,89 @@
     </div>
 </form>
 
-<!-- Form hidden para toggle individual -->
-<form method="post" id="toggle-form" style="display:none">
-    <?= csrf_field() ?>
-</form>
+<!-- Toast de notificação -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+    <div id="toast-notif" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-msg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
 <script>
-// Toggle individual
-function toggleCliente(id, isActive) {
-    const label = isActive ? 'desativar' : 'ativar';
+function showToast(message, success = true) {
+    const toast = document.getElementById('toast-notif');
+    toast.className = `toast align-items-center text-bg-${success ? 'success' : 'danger'} border-0`;
+    document.getElementById('toast-msg').textContent = message;
+    bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
+}
+
+function updateRow(id, active) {
+    const row = document.querySelector(`input[name="ids[]"][value="${id}"]`)?.closest('tr');
+    if (! row) return;
+    const badge = row.querySelector('td:nth-child(6) .badge');
+    const btn   = row.querySelector('button[data-toggle]');
+
+    if (badge) {
+        badge.className   = `badge text-bg-${active ? 'success' : 'secondary'}`;
+        badge.textContent = active ? 'Ativo' : 'Inativo';
+    }
+    if (btn) {
+        btn.className = `btn btn-sm ${active ? 'btn-outline-danger' : 'btn-outline-success'}`;
+        btn.textContent   = active ? 'Desativar' : 'Ativar';
+        btn.dataset.active = active ? '1' : '0';
+    }
+}
+
+function toggleCliente(btn) {
+    const id        = btn.dataset.id;
+    const active    = btn.dataset.active === '1';
+    const newActive = ! active;
+    const label     = active ? 'desativar' : 'ativar';
     if (! confirm(`Deseja ${label} este cliente?`)) return;
 
-    const form = document.getElementById('toggle-form');
-    form.action = `/admin/clients/${id}/toggle`;
-    form.submit();
+    const body = new URLSearchParams({ active: newActive ? '1' : '0' });
+
+    fetch(`/admin/clients/${id}/toggle`, { method: 'POST', body })
+        .then(r => {
+            if (! r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.json();
+        })
+        .then(data => {
+            showToast(data.message, data.success);
+            if (data.success) updateRow(id, data.active);
+        })
+        .catch(err => showToast('Erro ao processar a requisição. (' + err.message + ')', false));
 }
+
+// Bulk toggle via fetch
+document.getElementById('bulk-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const action  = e.submitter?.value;
+    const checked = [...document.querySelectorAll('.row-check:checked')];
+
+    if (! checked.length || ! action) return;
+
+    const body = new URLSearchParams();
+    body.append('action', action);
+    checked.forEach(cb => body.append('ids[]', cb.value));
+
+    fetch('/admin/clients/bulk-toggle', { method: 'POST', body })
+        .then(r => {
+            if (! r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.json();
+        })
+        .then(data => {
+            showToast(data.message, data.success);
+            if (data.success) {
+                data.ids.forEach(id => updateRow(id, data.active));
+                checked.forEach(cb => cb.checked = false);
+                updateBulkBar();
+            }
+        })
+        .catch(err => showToast('Erro ao processar a requisição. (' + err.message + ')', false));
+});
 
 // Selecionar todos
 document.getElementById('check-all').addEventListener('change', function () {
@@ -98,7 +169,6 @@ document.getElementById('check-all').addEventListener('change', function () {
     updateBulkBar();
 });
 
-// Atualizar barra ao marcar/desmarcar
 document.querySelectorAll('.row-check').forEach(cb => {
     cb.addEventListener('change', updateBulkBar);
 });
@@ -106,9 +176,7 @@ document.querySelectorAll('.row-check').forEach(cb => {
 function updateBulkBar() {
     const checked = document.querySelectorAll('.row-check:checked');
     const bar     = document.getElementById('bulk-bar');
-    const count   = document.getElementById('selected-count');
-
-    count.textContent = checked.length;
+    document.getElementById('selected-count').textContent = checked.length;
 
     if (checked.length > 0) {
         bar.classList.remove('d-none');
