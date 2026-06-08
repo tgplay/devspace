@@ -17,8 +17,20 @@ class Clients extends Controller
 
     public function index()
     {
+        $clients = (new UserModel())->where('role', 'client')->orderBy('name')->findAll();
+
+        $projectTypes = [];
+        if ($clients) {
+            $ids  = array_column($clients, 'id');
+            $rows = (new ProjectModel())->select('client_id, type')->whereIn('client_id', $ids)->findAll();
+            foreach ($rows as $row) {
+                $projectTypes[$row['client_id']][$row['type']] = true;
+            }
+        }
+
         return view('admin/clients/index', [
-            'clients' => (new UserModel())->where('role', 'client')->orderBy('name')->findAll(),
+            'clients'      => $clients,
+            'projectTypes' => $projectTypes,
         ]);
     }
 

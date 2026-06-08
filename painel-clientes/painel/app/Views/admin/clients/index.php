@@ -32,6 +32,7 @@
                         <th>Nome</th>
                         <th>E-mail</th>
                         <th>Telefone</th>
+                        <th>Tipo</th>
                         <th>Cadastro</th>
                         <th>Status</th>
                         <th></th>
@@ -48,6 +49,18 @@
                         <td><?= esc($c['name']) ?></td>
                         <td><?= esc($c['email']) ?></td>
                         <td><?= esc($c['phone'] ?? '—') ?></td>
+                        <td>
+                            <?php
+                            $typeLabels = ['site' => 'Site', 'app' => 'App', 'system' => 'Sistema', 'other' => 'Outro'];
+                            $tipos = array_keys($projectTypes[$c['id']] ?? []);
+                            if ($tipos):
+                                foreach ($tipos as $t):
+                            ?>
+                                <span class="badge text-bg-info text-white me-1"><?= $typeLabels[$t] ?? esc($t) ?></span>
+                            <?php endforeach; else: ?>
+                                <span class="text-muted small">—</span>
+                            <?php endif ?>
+                        </td>
                         <td><?= fmt_dt($c['created_at'], 'd/m/Y') ?></td>
                         <td>
                             <?php if ($ativo): ?>
@@ -71,7 +84,7 @@
                     </tr>
                     <?php endforeach ?>
                     <?php if (empty($clients)): ?>
-                    <tr><td colspan="7" class="text-center text-muted py-4">Nenhum cliente cadastrado.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-4">Nenhum cliente cadastrado.</td></tr>
                     <?php endif ?>
                 </tbody>
             </table>
