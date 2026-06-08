@@ -60,6 +60,24 @@ function showToast(message, success = true) {
     bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
 }
 
+document.getElementById('form-dados').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const body = new URLSearchParams({
+        name:  document.getElementById('field-name').value.trim(),
+        email: document.getElementById('field-email').value.trim(),
+        phone: document.getElementById('field-phone').value.trim(),
+    });
+    fetch('/admin/clients/<?= $client['id'] ?>/update', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => {
+            showToast(data.message, data.success);
+            if (data.success && data.name) {
+                document.querySelector('h4.mb-0').textContent = data.name;
+            }
+        })
+        .catch(() => showToast('Erro ao salvar os dados.', false));
+});
+
 document.getElementById('btn-toggle-senha').addEventListener('click', function () {
     const input = document.getElementById('nova-senha');
     const icon  = this.querySelector('i');
@@ -98,28 +116,40 @@ document.getElementById('btn-confirmar-reset').addEventListener('click', functio
 <div class="row g-4">
     <!-- Dados do cliente -->
     <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">Dados</div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <div class="text-muted small">E-mail</div>
-                    <?= esc($client['email']) ?>
-                </li>
-                <li class="list-group-item">
-                    <div class="text-muted small">Telefone</div>
-                    <?= esc($client['phone'] ?? '—') ?>
-                </li>
-                <li class="list-group-item">
-                    <div class="text-muted small">Cadastro</div>
-                    <?= fmt_dt($client['created_at']) ?>
-                </li>
-                <li class="list-group-item">
-                    <div class="text-muted small">Status</div>
-                    <?php $ativo = filter_var($client['active'], FILTER_VALIDATE_BOOLEAN) ?>
-                    <?= $ativo ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
-                </li>
-            </ul>
-        </div>
+        <form id="form-dados" novalidate>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Dados</span>
+                    <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <label class="text-muted small mb-1" for="field-name">Nome</label>
+                        <input type="text" id="field-name" name="name" class="form-control form-control-sm"
+                               value="<?= esc($client['name']) ?>" required>
+                    </li>
+                    <li class="list-group-item">
+                        <label class="text-muted small mb-1" for="field-email">E-mail</label>
+                        <input type="email" id="field-email" name="email" class="form-control form-control-sm"
+                               value="<?= esc($client['email']) ?>" required>
+                    </li>
+                    <li class="list-group-item">
+                        <label class="text-muted small mb-1" for="field-phone">Telefone</label>
+                        <input type="text" id="field-phone" name="phone" class="form-control form-control-sm"
+                               value="<?= esc($client['phone'] ?? '') ?>" placeholder="—">
+                    </li>
+                    <li class="list-group-item">
+                        <div class="text-muted small">Cadastro</div>
+                        <?= fmt_dt($client['created_at']) ?>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="text-muted small">Status</div>
+                        <?php $ativo = filter_var($client['active'], FILTER_VALIDATE_BOOLEAN) ?>
+                        <?= $ativo ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
+                    </li>
+                </ul>
+            </div>
+        </form>
     </div>
 
     <!-- Projetos -->

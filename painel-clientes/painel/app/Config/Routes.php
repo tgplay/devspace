@@ -21,6 +21,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('clients/(:num)/toggle',     'Admin\Clients::toggle/$1');
     $routes->post('clients/bulk-toggle',       'Admin\Clients::bulkToggle');
     $routes->get('clients/(:num)',             'Admin\Clients::show/$1');
+    $routes->post('clients/(:num)/update',         'Admin\Clients::update/$1');
     $routes->post('clients/(:num)/reset-password', 'Admin\Clients::resetPassword/$1');
     $routes->get('clients/(:num)/login',       'Admin\Clients::loginAs/$1');
     $routes->get('projects',             'Admin\Projects::index');

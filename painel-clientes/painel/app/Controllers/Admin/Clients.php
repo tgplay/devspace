@@ -73,6 +73,31 @@ class Clients extends Controller
         ]);
     }
 
+    public function update(int $id)
+    {
+        $user = (new UserModel())->find($id);
+        if (! $user || $user['role'] !== 'client') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Cliente não encontrado.']);
+        }
+
+        $name  = trim($this->request->getPost('name')  ?? '');
+        $email = trim($this->request->getPost('email') ?? '');
+        $phone = trim($this->request->getPost('phone') ?? '');
+
+        if ($name === '' || $email === '') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nome e e-mail são obrigatórios.']);
+        }
+
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'E-mail inválido.']);
+        }
+
+        $data = ['name' => $name, 'email' => $email, 'phone' => $phone ?: null];
+        (new UserModel())->where('id', $id)->set($data)->update();
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Dados atualizados com sucesso.', 'name' => $name]);
+    }
+
     public function resetPassword(int $id)
     {
         $user = (new UserModel())->find($id);
