@@ -64,6 +64,23 @@ class Projects extends Controller
         ]);
     }
 
+    public function rename(int $id)
+    {
+        $project = (new ProjectModel())->find($id);
+        if (! $project) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Projeto não encontrado.']);
+        }
+
+        $name = trim($this->request->getPost('name') ?? '');
+        if (strlen($name) < 2) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nome deve ter no mínimo 2 caracteres.']);
+        }
+
+        (new ProjectModel())->where('id', $id)->set(['name' => $name])->update();
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Nome atualizado.', 'name' => $name]);
+    }
+
     public function update(int $id)
     {
         $model = new ProjectModel();

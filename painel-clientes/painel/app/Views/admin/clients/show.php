@@ -60,6 +60,50 @@ function showToast(message, success = true) {
     bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
 }
 
+// Edição inline de nome de projeto
+document.querySelectorAll('.btn-edit-project').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.add('d-none');
+        this.classList.add('d-none');
+        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.remove('d-none');
+        document.querySelector(`.project-name-edit[data-id="${id}"] input`).focus();
+    });
+});
+
+document.querySelectorAll('.btn-cancel-project').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
+        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
+        document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
+    });
+});
+
+document.querySelectorAll('.btn-save-project').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id    = this.dataset.id;
+        const input = document.querySelector(`.project-name-edit[data-id="${id}"] input`);
+        const name  = input.value.trim();
+        if (! name) return;
+
+        fetch(`/admin/projects/${id}/rename`, { method: 'POST', body: new URLSearchParams({ name }) })
+            .then(r => r.json())
+            .then(data => {
+                showToast(data.message, data.success);
+                if (data.success) {
+                    const span = document.querySelector(`.project-name-text[data-id="${id}"]`);
+                    span.textContent = data.name;
+                    input.value = data.name;
+                }
+                document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
+                document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
+                document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
+            })
+            .catch(() => showToast('Erro ao salvar o nome.', false));
+    });
+});
+
 document.getElementById('form-dados').addEventListener('submit', function (e) {
     e.preventDefault();
     const body = new URLSearchParams({
@@ -166,7 +210,22 @@ document.getElementById('btn-confirmar-reset').addEventListener('click', functio
                 <tbody>
                     <?php foreach ($projects as $p): ?>
                     <tr>
-                        <td><?= esc($p['name']) ?></td>
+                        <td>
+                            <span class="project-name-text" data-id="<?= $p['id'] ?>"><?= esc($p['name']) ?></span>
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted btn-edit-project" data-id="<?= $p['id'] ?>" title="Editar nome">
+                                <i class="bi bi-pencil" style="font-size:.75rem"></i>
+                            </button>
+                            <span class="project-name-edit d-none" data-id="<?= $p['id'] ?>">
+                                <input type="text" class="form-control form-control-sm d-inline-block w-auto"
+                                       value="<?= esc($p['name']) ?>" style="min-width:140px">
+                                <button type="button" class="btn btn-sm btn-primary ms-1 btn-save-project" data-id="<?= $p['id'] ?>">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary btn-cancel-project" data-id="<?= $p['id'] ?>">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </span>
+                        </td>
                         <td><?= esc($p['type']) ?></td>
                         <td><span class="badge text-bg-secondary"><?= esc($p['status']) ?></span></td>
                         <td>

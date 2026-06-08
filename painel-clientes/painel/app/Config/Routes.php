@@ -27,8 +27,9 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('projects',             'Admin\Projects::index');
     $routes->get('projects/new',         'Admin\Projects::create');
     $routes->post('projects',            'Admin\Projects::store');
-    $routes->get('projects/(:num)',      'Admin\Projects::show/$1');
-    $routes->post('projects/(:num)',     'Admin\Projects::update/$1');
+    $routes->get('projects/(:num)',        'Admin\Projects::show/$1');
+    $routes->post('projects/(:num)',       'Admin\Projects::update/$1');
+    $routes->post('projects/(:num)/rename','Admin\Projects::rename/$1');
     $routes->get('support',              'Admin\Support::index');
     $routes->get('support/(:num)',       'Admin\Support::show/$1');
     $routes->post('support/(:num)',      'Admin\Support::reply/$1');
