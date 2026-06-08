@@ -45,13 +45,12 @@
     </div>
 </div>
 
-<!-- Toast -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
-    <div id="toast-notif" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body" id="toast-msg"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
+<!-- Notificação topo centralizado -->
+<div id="notif-bar" class="position-fixed top-0 start-50 translate-middle-x mt-3 d-none" style="z-index:1100;min-width:320px;max-width:520px">
+    <div id="notif-inner" class="alert shadow d-flex align-items-center gap-2 mb-0 py-3 px-4" role="alert">
+        <i id="notif-icon" class="bi fs-5"></i>
+        <span id="notif-msg" class="fw-semibold flex-grow-1"></span>
+        <button type="button" class="btn-close ms-2" onclick="hideNotif()"></button>
     </div>
 </div>
 
@@ -178,11 +177,27 @@
 </div>
 
 <script>
+let _notifTimer = null;
+
 function showToast(message, success = true) {
-    const toast = document.getElementById('toast-notif');
-    toast.className = `toast align-items-center text-bg-${success ? 'success' : 'danger'} border-0`;
-    document.getElementById('toast-msg').textContent = message;
-    bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
+    const bar   = document.getElementById('notif-bar');
+    const inner = document.getElementById('notif-inner');
+    const icon  = document.getElementById('notif-icon');
+    document.getElementById('notif-msg').textContent = message;
+
+    inner.className = `alert shadow d-flex align-items-center gap-2 mb-0 py-3 px-4 alert-${success ? 'success' : 'danger'}`;
+    icon.className  = `bi fs-5 ${success ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'}`;
+
+    bar.classList.remove('d-none');
+
+    clearTimeout(_notifTimer);
+    if (success) {
+        _notifTimer = setTimeout(hideNotif, 3000);
+    }
+}
+
+function hideNotif() {
+    document.getElementById('notif-bar').classList.add('d-none');
 }
 
 document.getElementById('btn-salvar-tudo').addEventListener('click', function () {
