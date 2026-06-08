@@ -209,7 +209,8 @@ document.getElementById('btn-salvar-tudo').addEventListener('click', function ()
     Promise.all([saveClient, saveProjects])
         .then(([clientData, projectData]) => {
             if (clientData.success && projectData.success) {
-                window.location.href = '/admin/clients';
+                showToast('Dados salvos com sucesso!');
+                setTimeout(() => { window.location.href = '/admin/clients'; }, 1500);
             } else {
                 showToast(clientData.message || 'Erro ao salvar.', false);
                 btn.disabled = false;
