@@ -208,17 +208,17 @@ document.getElementById('btn-salvar-tudo').addEventListener('click', function ()
 
     Promise.all([saveClient, saveProjects])
         .then(([clientData, projectData]) => {
-            const ok = clientData.success && projectData.success;
-            const msg = clientData.success
-                ? 'Dados salvos com sucesso.'
-                : clientData.message;
-            showToast(msg, ok);
-            if (clientData.success && clientData.name) {
-                document.getElementById('page-title').textContent = clientData.name;
+            if (clientData.success && projectData.success) {
+                window.location.href = '/admin/clients';
+            } else {
+                showToast(clientData.message || 'Erro ao salvar.', false);
+                btn.disabled = false;
             }
         })
-        .catch(() => showToast('Erro ao salvar.', false))
-        .finally(() => { btn.disabled = false; });
+        .catch(() => {
+            showToast('Erro ao salvar.', false);
+            btn.disabled = false;
+        });
 });
 
 document.getElementById('btn-toggle-senha').addEventListener('click', function () {

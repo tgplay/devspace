@@ -10,6 +10,11 @@ use CodeIgniter\Controller;
 
 class Clients extends Controller
 {
+    private function db()
+    {
+        return \Config\Database::connect();
+    }
+
     public function index()
     {
         return view('admin/clients/index', [
@@ -41,7 +46,7 @@ class Clients extends Controller
 
         $newActive = $this->request->getPost('active') === '1';
 
-        (new UserModel())->where('id', $id)->set(['active' => $newActive])->update();
+        $this->db()->table('users')->where('id', $id)->update(['active' => $newActive]);
 
         $status = $newActive ? 'ativado' : 'desativado';
         return $this->response->setJSON([
@@ -61,7 +66,7 @@ class Clients extends Controller
         }
 
         $active = $action === 'activate';
-        (new UserModel())->whereIn('id', $ids)->where('role', 'client')->set(['active' => $active])->update();
+        $this->db()->table('users')->whereIn('id', $ids)->where('role', 'client')->update(['active' => $active]);
 
         $label = $active ? 'ativados' : 'desativados';
         $count = count($ids);
@@ -92,8 +97,11 @@ class Clients extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'E-mail inválido.']);
         }
 
-        $data = ['name' => $name, 'email' => $email, 'phone' => $phone ?: null];
-        (new UserModel())->where('id', $id)->set($data)->update();
+        $this->db()->table('users')->where('id', $id)->update([
+            'name'  => $name,
+            'email' => $email,
+            'phone' => $phone ?: null,
+        ]);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Dados atualizados com sucesso.', 'name' => $name]);
     }
@@ -110,7 +118,9 @@ class Clients extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'A senha deve ter no mínimo 6 caracteres.']);
         }
 
-        (new UserModel())->where('id', $id)->set(['password' => password_hash($password, PASSWORD_DEFAULT)])->update();
+        $this->db()->table('users')->where('id', $id)->update([
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+        ]);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Senha redefinida com sucesso.']);
     }
