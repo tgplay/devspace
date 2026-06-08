@@ -35,7 +35,7 @@
                             <?= $statusLabel[$t['status']] ?? $t['status'] ?>
                         </span>
                     </td>
-                    <td><?= date('d/m/Y', strtotime($t['created_at'])) ?></td>
+                    <td><?= fmt_dt($t['created_at'], 'd/m/Y') ?></td>
                     <td><a href="/app/support/<?= $t['id'] ?>" class="btn btn-sm btn-outline-primary">Ver</a></td>
                 </tr>
                 <?php endforeach ?>

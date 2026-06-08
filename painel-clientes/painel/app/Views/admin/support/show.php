@@ -20,7 +20,7 @@
                          style="max-width:80%">
                         <div class="small fw-bold mb-1"><?= $isAdmin ? 'Suporte' : 'Cliente' ?></div>
                         <?= nl2br(esc($m['message'])) ?>
-                        <div class="small opacity-75 mt-1"><?= date('d/m/Y H:i', strtotime($m['created_at'])) ?></div>
+                        <div class="small opacity-75 mt-1"><?= fmt_dt($m['created_at']) ?></div>
                     </div>
                 </div>
                 <?php endforeach ?>
@@ -65,7 +65,7 @@
                 </li>
                 <li class="list-group-item">
                     <div class="text-muted small">Aberto em</div>
-                    <?= date('d/m/Y H:i', strtotime($ticket['created_at'])) ?>
+                    <?= fmt_dt($ticket['created_at']) ?>
                 </li>
             </ul>
         </div>

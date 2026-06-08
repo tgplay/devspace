@@ -29,7 +29,7 @@
                         <?= esc($d['name']) ?>
                     </td>
                     <td><?= $typeLabel[$d['type']] ?? $d['type'] ?></td>
-                    <td><?= date('d/m/Y', strtotime($d['created_at'])) ?></td>
+                    <td><?= fmt_dt($d['created_at'], 'd/m/Y') ?></td>
                     <td>
                         <a href="<?= esc($d['file_path']) ?>" target="_blank"
                            class="btn btn-sm btn-outline-primary">

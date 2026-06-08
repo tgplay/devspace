@@ -39,7 +39,7 @@
                 </div>
                 <?php if ($p['deadline']): ?>
                 <div class="small text-muted mb-3">
-                    <i class="bi bi-calendar me-1"></i> Prazo: <?= date('d/m/Y', strtotime($p['deadline'])) ?>
+                    <i class="bi bi-calendar me-1"></i> Prazo: <?= fmt_dt($p['deadline'], 'd/m/Y') ?>
                 </div>
                 <?php endif ?>
             </div>

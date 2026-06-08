@@ -24,7 +24,7 @@
                  style="max-width:80%">
                 <div class="small fw-bold mb-1"><?= $isClient ? 'Você' : 'Suporte' ?></div>
                 <?= nl2br(esc($m['message'])) ?>
-                <div class="small opacity-75 mt-1"><?= date('d/m/Y H:i', strtotime($m['created_at'])) ?></div>
+                <div class="small opacity-75 mt-1"><?= fmt_dt($m['created_at']) ?></div>
             </div>
         </div>
         <?php endforeach ?>

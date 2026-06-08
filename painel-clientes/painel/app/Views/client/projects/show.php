@@ -33,7 +33,7 @@
                 </div>
                 <?php if ($project['deadline']): ?>
                 <div class="small text-muted">
-                    <i class="bi bi-calendar me-1"></i> Prazo: <?= date('d/m/Y', strtotime($project['deadline'])) ?>
+                    <i class="bi bi-calendar me-1"></i> Prazo: <?= fmt_dt($project['deadline'], 'd/m/Y') ?>
                 </div>
                 <?php endif ?>
                 <?php if ($project['delivery_url']): ?>
@@ -71,7 +71,7 @@
                             <?php if ($t['status'] === 'done' && $t['approved_at']): ?>
                             <small class="text-success d-block">
                                 <i class="bi bi-check-circle me-1"></i>
-                                Aprovada em <?= date('d/m/Y', strtotime($t['approved_at'])) ?>
+                                Aprovada em <?= fmt_dt($t['approved_at'], 'd/m/Y') ?>
                             </small>
                             <?php endif ?>
                         </div>

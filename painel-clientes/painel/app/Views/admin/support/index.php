@@ -30,7 +30,7 @@
                             <?= $statusLabel[$t['status']] ?? $t['status'] ?>
                         </span>
                     </td>
-                    <td><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></td>
+                    <td><?= fmt_dt($t['created_at']) ?></td>
                     <td><a href="/admin/support/<?= $t['id'] ?>" class="btn btn-sm btn-outline-primary">Atender</a></td>
                 </tr>
                 <?php endforeach ?>

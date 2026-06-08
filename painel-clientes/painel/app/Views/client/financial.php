@@ -26,7 +26,7 @@
                 <tr>
                     <td><?= esc($i['description']) ?></td>
                     <td class="fw-medium">R$ <?= number_format($i['amount'], 2, ',', '.') ?></td>
-                    <td><?= date('d/m/Y', strtotime($i['due_date'])) ?></td>
+                    <td><?= fmt_dt($i['due_date'], 'd/m/Y') ?></td>
                     <td>
                         <span class="badge text-bg-<?= $statusBadge[$i['status']] ?? 'secondary' ?>">
                             <?= $statusLabel[$i['status']] ?? $i['status'] ?>

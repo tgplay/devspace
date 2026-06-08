@@ -48,7 +48,7 @@
                         <td><?= esc($c['name']) ?></td>
                         <td><?= esc($c['email']) ?></td>
                         <td><?= esc($c['phone'] ?? '—') ?></td>
-                        <td><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
+                        <td><?= fmt_dt($c['created_at'], 'd/m/Y') ?></td>
                         <td>
                             <?php if ($ativo): ?>
                                 <span class="badge text-bg-success">Ativo</span>

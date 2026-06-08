@@ -27,7 +27,7 @@
                 </li>
                 <li class="list-group-item">
                     <div class="text-muted small">Cadastro</div>
-                    <?= date('d/m/Y H:i', strtotime($client['created_at'])) ?>
+                    <?= fmt_dt($client['created_at']) ?>
                 </li>
                 <li class="list-group-item">
                     <div class="text-muted small">Status</div>
@@ -83,7 +83,7 @@
                     <tr>
                         <td><?= esc($t['subject']) ?></td>
                         <td><span class="badge text-bg-secondary"><?= esc($t['status']) ?></span></td>
-                        <td><?= date('d/m/Y', strtotime($t['created_at'])) ?></td>
+                        <td><?= fmt_dt($t['created_at'], 'd/m/Y') ?></td>
                         <td><a href="/admin/support/<?= $t['id'] ?>" class="btn btn-sm btn-outline-secondary">Ver</a></td>
                     </tr>
                     <?php endforeach ?>
@@ -110,7 +110,7 @@
                     <tr>
                         <td><?= esc($i['description']) ?></td>
                         <td>R$ <?= number_format($i['amount'], 2, ',', '.') ?></td>
-                        <td><?= date('d/m/Y', strtotime($i['due_date'])) ?></td>
+                        <td><?= fmt_dt($i['due_date'], 'd/m/Y') ?></td>
                         <td><span class="badge text-bg-<?= $badges[$i['status']] ?? 'secondary' ?>"><?= $labels[$i['status']] ?? $i['status'] ?></span></td>
                     </tr>
                     <?php endforeach ?>

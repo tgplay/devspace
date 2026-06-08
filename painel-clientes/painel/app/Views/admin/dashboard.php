@@ -58,7 +58,7 @@
                 <tr>
                     <td><?= esc($c['name']) ?></td>
                     <td><?= esc($c['email']) ?></td>
-                    <td><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
+                    <td><?= fmt_dt($c['created_at'], 'd/m/Y') ?></td>
                     <td>
                         <a href="/admin/clients/<?= $c['id'] ?>" class="btn btn-sm btn-outline-secondary">Ver</a>
                     </td>

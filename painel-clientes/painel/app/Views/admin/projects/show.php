@@ -65,7 +65,7 @@
                 </li>
                 <li class="list-group-item">
                     <div class="text-muted small">Criado em</div>
-                    <?= date('d/m/Y', strtotime($project['created_at'])) ?>
+                    <?= fmt_dt($project['created_at'], 'd/m/Y') ?>
                 </li>
                 <?php if ($project['delivery_url']): ?>
                 <li class="list-group-item">

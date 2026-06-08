@@ -49,7 +49,7 @@
                         </div>
                         <small class="text-muted"><?= $p['progress'] ?>%</small>
                     </td>
-                    <td><?= $p['deadline'] ? date('d/m/Y', strtotime($p['deadline'])) : '—' ?></td>
+                    <td><?= $p['deadline'] ? fmt_dt($p['deadline'], 'd/m/Y') : '—' ?></td>
                     <td><a href="/admin/projects/<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary">Ver</a></td>
                 </tr>
                 <?php endforeach ?>
