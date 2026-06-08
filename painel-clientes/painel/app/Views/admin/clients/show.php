@@ -6,10 +6,94 @@
         <a href="/admin/clients" class="text-muted small">&larr; Clientes</a>
         <h4 class="mb-0 mt-1"><?= esc($client['name']) ?></h4>
     </div>
-    <a href="/admin/clients/<?= $client['id'] ?>/login" class="btn btn-outline-secondary">
-        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar como cliente
-    </a>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modal-reset-senha">
+            <i class="bi bi-key me-1"></i> Redefinir senha
+        </button>
+        <a href="/admin/clients/<?= $client['id'] ?>/login" class="btn btn-outline-secondary">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Entrar como cliente
+        </a>
+    </div>
 </div>
+
+<!-- Modal redefinir senha -->
+<div class="modal fade" id="modal-reset-senha" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Redefinir senha</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label small">Nova senha <span class="text-muted">(mín. 6 caracteres)</span></label>
+                <div class="input-group">
+                    <input type="password" id="nova-senha" class="form-control" placeholder="Nova senha">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-toggle-senha">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <div id="senha-feedback" class="form-text text-danger d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning btn-sm" id="btn-confirmar-reset">Redefinir</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+    <div id="toast-notif" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-msg"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showToast(message, success = true) {
+    const toast = document.getElementById('toast-notif');
+    toast.className = `toast align-items-center text-bg-${success ? 'success' : 'danger'} border-0`;
+    document.getElementById('toast-msg').textContent = message;
+    bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
+}
+
+document.getElementById('btn-toggle-senha').addEventListener('click', function () {
+    const input = document.getElementById('nova-senha');
+    const icon  = this.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+});
+
+document.getElementById('btn-confirmar-reset').addEventListener('click', function () {
+    const senha    = document.getElementById('nova-senha').value.trim();
+    const feedback = document.getElementById('senha-feedback');
+
+    if (senha.length < 6) {
+        feedback.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+        feedback.classList.remove('d-none');
+        return;
+    }
+    feedback.classList.add('d-none');
+
+    const body = new URLSearchParams({ password: senha });
+    fetch('/admin/clients/<?= $client['id'] ?>/reset-password', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById('modal-reset-senha')).hide();
+            document.getElementById('nova-senha').value = '';
+            showToast(data.message, data.success);
+        })
+        .catch(() => showToast('Erro ao processar a requisição.', false));
+});
+</script>
 
 <div class="row g-4">
     <!-- Dados do cliente -->

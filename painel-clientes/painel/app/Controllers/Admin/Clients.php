@@ -73,6 +73,23 @@ class Clients extends Controller
         ]);
     }
 
+    public function resetPassword(int $id)
+    {
+        $user = (new UserModel())->find($id);
+        if (! $user || $user['role'] !== 'client') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Cliente não encontrado.']);
+        }
+
+        $password = $this->request->getPost('password');
+        if (! $password || strlen($password) < 6) {
+            return $this->response->setJSON(['success' => false, 'message' => 'A senha deve ter no mínimo 6 caracteres.']);
+        }
+
+        (new UserModel())->where('id', $id)->set(['password' => password_hash($password, PASSWORD_DEFAULT)])->update();
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Senha redefinida com sucesso.']);
+    }
+
     public function loginAs(int $id)
     {
         $client = (new UserModel())->find($id);
