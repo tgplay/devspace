@@ -52,111 +52,6 @@
     </div>
 </div>
 
-<script>
-function showToast(message, success = true) {
-    const toast = document.getElementById('toast-notif');
-    toast.className = `toast align-items-center text-bg-${success ? 'success' : 'danger'} border-0`;
-    document.getElementById('toast-msg').textContent = message;
-    bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
-}
-
-// Edição inline de nome de projeto
-document.querySelectorAll('.btn-edit-project').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id = this.dataset.id;
-        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.add('d-none');
-        this.classList.add('d-none');
-        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.remove('d-none');
-        document.querySelector(`.project-name-edit[data-id="${id}"] input`).focus();
-    });
-});
-
-document.querySelectorAll('.btn-cancel-project').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id = this.dataset.id;
-        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
-        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
-        document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
-    });
-});
-
-document.querySelectorAll('.btn-save-project').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id    = this.dataset.id;
-        const input = document.querySelector(`.project-name-edit[data-id="${id}"] input`);
-        const name  = input.value.trim();
-        if (! name) return;
-
-        fetch(`/admin/projects/${id}/rename`, { method: 'POST', body: new URLSearchParams({ name }) })
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, data.success);
-                if (data.success) {
-                    const span = document.querySelector(`.project-name-text[data-id="${id}"]`);
-                    span.textContent = data.name;
-                    input.value = data.name;
-                }
-                document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
-                document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
-                document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
-            })
-            .catch(() => showToast('Erro ao salvar o nome.', false));
-    });
-});
-
-document.getElementById('form-dados').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const body = new URLSearchParams({
-        name:  document.getElementById('field-name').value.trim(),
-        email: document.getElementById('field-email').value.trim(),
-        phone: document.getElementById('field-phone').value.trim(),
-    });
-    fetch('/admin/clients/<?= $client['id'] ?>/update', { method: 'POST', body })
-        .then(r => r.json())
-        .then(data => {
-            showToast(data.message, data.success);
-            if (data.success && data.name) {
-                document.querySelector('h4.mb-0').textContent = data.name;
-            }
-        })
-        .catch(() => showToast('Erro ao salvar os dados.', false));
-});
-
-document.getElementById('btn-toggle-senha').addEventListener('click', function () {
-    const input = document.getElementById('nova-senha');
-    const icon  = this.querySelector('i');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'bi bi-eye-slash';
-    } else {
-        input.type = 'password';
-        icon.className = 'bi bi-eye';
-    }
-});
-
-document.getElementById('btn-confirmar-reset').addEventListener('click', function () {
-    const senha    = document.getElementById('nova-senha').value.trim();
-    const feedback = document.getElementById('senha-feedback');
-
-    if (senha.length < 6) {
-        feedback.textContent = 'A senha deve ter no mínimo 6 caracteres.';
-        feedback.classList.remove('d-none');
-        return;
-    }
-    feedback.classList.add('d-none');
-
-    const body = new URLSearchParams({ password: senha });
-    fetch('/admin/clients/<?= $client['id'] ?>/reset-password', { method: 'POST', body })
-        .then(r => r.json())
-        .then(data => {
-            bootstrap.Modal.getInstance(document.getElementById('modal-reset-senha')).hide();
-            document.getElementById('nova-senha').value = '';
-            showToast(data.message, data.success);
-        })
-        .catch(() => showToast('Erro ao processar a requisição.', false));
-});
-</script>
-
 <div class="row g-4">
     <!-- Dados do cliente -->
     <div class="col-lg-4">
@@ -295,5 +190,108 @@ document.getElementById('btn-confirmar-reset').addEventListener('click', functio
         </div>
     </div>
 </div>
+
+<script>
+function showToast(message, success = true) {
+    const toast = document.getElementById('toast-notif');
+    toast.className = `toast align-items-center text-bg-${success ? 'success' : 'danger'} border-0`;
+    document.getElementById('toast-msg').textContent = message;
+    bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
+}
+
+document.getElementById('form-dados').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const body = new URLSearchParams({
+        name:  document.getElementById('field-name').value.trim(),
+        email: document.getElementById('field-email').value.trim(),
+        phone: document.getElementById('field-phone').value.trim(),
+    });
+    fetch('/admin/clients/<?= $client['id'] ?>/update', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => {
+            showToast(data.message, data.success);
+            if (data.success && data.name) {
+                document.querySelector('h4.mb-0').textContent = data.name;
+            }
+        })
+        .catch(() => showToast('Erro ao salvar os dados.', false));
+});
+
+document.querySelectorAll('.btn-edit-project').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.add('d-none');
+        this.classList.add('d-none');
+        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.remove('d-none');
+        document.querySelector(`.project-name-edit[data-id="${id}"] input`).focus();
+    });
+});
+
+document.querySelectorAll('.btn-cancel-project').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
+        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
+        document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
+    });
+});
+
+document.querySelectorAll('.btn-save-project').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id    = this.dataset.id;
+        const input = document.querySelector(`.project-name-edit[data-id="${id}"] input`);
+        const name  = input.value.trim();
+        if (! name) return;
+
+        fetch(`/admin/projects/${id}/rename`, { method: 'POST', body: new URLSearchParams({ name }) })
+            .then(r => r.json())
+            .then(data => {
+                showToast(data.message, data.success);
+                if (data.success) {
+                    document.querySelector(`.project-name-text[data-id="${id}"]`).textContent = data.name;
+                    input.value = data.name;
+                }
+                document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
+                document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
+                document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
+            })
+            .catch(() => showToast('Erro ao salvar o nome.', false));
+    });
+});
+
+document.getElementById('btn-toggle-senha').addEventListener('click', function () {
+    const input = document.getElementById('nova-senha');
+    const icon  = this.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+});
+
+document.getElementById('btn-confirmar-reset').addEventListener('click', function () {
+    const senha    = document.getElementById('nova-senha').value.trim();
+    const feedback = document.getElementById('senha-feedback');
+
+    if (senha.length < 6) {
+        feedback.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+        feedback.classList.remove('d-none');
+        return;
+    }
+    feedback.classList.add('d-none');
+
+    const body = new URLSearchParams({ password: senha });
+    fetch('/admin/clients/<?= $client['id'] ?>/reset-password', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById('modal-reset-senha')).hide();
+            document.getElementById('nova-senha').value = '';
+            showToast(data.message, data.success);
+        })
+        .catch(() => showToast('Erro ao processar a requisição.', false));
+});
+</script>
 
 <?= $this->endSection() ?>
