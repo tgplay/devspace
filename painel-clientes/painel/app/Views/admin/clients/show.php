@@ -82,7 +82,7 @@
                 </li>
                 <li class="list-group-item">
                     <div class="text-muted small">Status</div>
-                    <?php $ativo = filter_var($client['active'], FILTER_VALIDATE_BOOLEAN) ?>
+                    <?php $ativo = pg_bool($client['active']) ?>
                     <?= $ativo ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
                 </li>
             </ul>

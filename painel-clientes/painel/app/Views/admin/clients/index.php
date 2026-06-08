@@ -39,7 +39,7 @@
                 </thead>
                 <tbody>
                     <?php foreach ($clients as $c): ?>
-                    <?php $ativo = filter_var($c['active'], FILTER_VALIDATE_BOOLEAN) ?>
+                    <?php $ativo = pg_bool($c['active']) ?>
                     <tr>
                         <td>
                             <input type="checkbox" name="ids[]" value="<?= $c['id'] ?>"
