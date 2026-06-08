@@ -4,9 +4,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="/admin/clients" class="text-muted small">&larr; Clientes</a>
-        <h4 class="mb-0 mt-1"><?= esc($client['name']) ?></h4>
+        <h4 class="mb-0 mt-1" id="page-title"><?= esc($client['name']) ?></h4>
     </div>
     <div class="d-flex gap-2">
+        <button type="button" id="btn-salvar-tudo" class="btn btn-primary">
+            <i class="bi bi-floppy me-1"></i> Salvar
+        </button>
         <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modal-reset-senha">
             <i class="bi bi-key me-1"></i> Redefinir senha
         </button>
@@ -55,40 +58,35 @@
 <div class="row g-4">
     <!-- Dados do cliente -->
     <div class="col-lg-4">
-        <form id="form-dados" novalidate>
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Dados</span>
-                    <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <label class="text-muted small mb-1" for="field-name">Nome</label>
-                        <input type="text" id="field-name" name="name" class="form-control form-control-sm"
-                               value="<?= esc($client['name']) ?>" required>
-                    </li>
-                    <li class="list-group-item">
-                        <label class="text-muted small mb-1" for="field-email">E-mail</label>
-                        <input type="email" id="field-email" name="email" class="form-control form-control-sm"
-                               value="<?= esc($client['email']) ?>" required>
-                    </li>
-                    <li class="list-group-item">
-                        <label class="text-muted small mb-1" for="field-phone">Telefone</label>
-                        <input type="text" id="field-phone" name="phone" class="form-control form-control-sm"
-                               value="<?= esc($client['phone'] ?? '') ?>" placeholder="—">
-                    </li>
-                    <li class="list-group-item">
-                        <div class="text-muted small">Cadastro</div>
-                        <?= fmt_dt($client['created_at']) ?>
-                    </li>
-                    <li class="list-group-item">
-                        <div class="text-muted small">Status</div>
-                        <?php $ativo = filter_var($client['active'], FILTER_VALIDATE_BOOLEAN) ?>
-                        <?= $ativo ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
-                    </li>
-                </ul>
-            </div>
-        </form>
+        <div class="card">
+            <div class="card-header">Dados</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <label class="text-muted small mb-1" for="field-name">Nome</label>
+                    <input type="text" id="field-name" class="form-control form-control-sm"
+                           value="<?= esc($client['name']) ?>" required>
+                </li>
+                <li class="list-group-item">
+                    <label class="text-muted small mb-1" for="field-email">E-mail</label>
+                    <input type="email" id="field-email" class="form-control form-control-sm"
+                           value="<?= esc($client['email']) ?>" required>
+                </li>
+                <li class="list-group-item">
+                    <label class="text-muted small mb-1" for="field-phone">Telefone</label>
+                    <input type="text" id="field-phone" class="form-control form-control-sm"
+                           value="<?= esc($client['phone'] ?? '') ?>" placeholder="—">
+                </li>
+                <li class="list-group-item">
+                    <div class="text-muted small">Cadastro</div>
+                    <?= fmt_dt($client['created_at']) ?>
+                </li>
+                <li class="list-group-item">
+                    <div class="text-muted small">Status</div>
+                    <?php $ativo = filter_var($client['active'], FILTER_VALIDATE_BOOLEAN) ?>
+                    <?= $ativo ? '<span class="badge text-bg-success">Ativo</span>' : '<span class="badge text-bg-secondary">Inativo</span>' ?>
+                </li>
+            </ul>
+        </div>
     </div>
 
     <!-- Projetos -->
@@ -106,20 +104,8 @@
                     <?php foreach ($projects as $p): ?>
                     <tr>
                         <td>
-                            <span class="project-name-text" data-id="<?= $p['id'] ?>"><?= esc($p['name']) ?></span>
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted btn-edit-project" data-id="<?= $p['id'] ?>" title="Editar nome">
-                                <i class="bi bi-pencil" style="font-size:.75rem"></i>
-                            </button>
-                            <span class="project-name-edit d-none" data-id="<?= $p['id'] ?>">
-                                <input type="text" class="form-control form-control-sm d-inline-block w-auto"
-                                       value="<?= esc($p['name']) ?>" style="min-width:140px">
-                                <button type="button" class="btn btn-sm btn-primary ms-1 btn-save-project" data-id="<?= $p['id'] ?>">
-                                    <i class="bi bi-check-lg"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-secondary btn-cancel-project" data-id="<?= $p['id'] ?>">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </span>
+                            <input type="text" class="form-control-plaintext form-control-sm project-name-input"
+                                   data-id="<?= $p['id'] ?>" value="<?= esc($p['name']) ?>">
                         </td>
                         <td><?= esc($p['type']) ?></td>
                         <td><span class="badge text-bg-secondary"><?= esc($p['status']) ?></span></td>
@@ -199,64 +185,40 @@ function showToast(message, success = true) {
     bootstrap.Toast.getOrCreateInstance(toast, { delay: 3500 }).show();
 }
 
-document.getElementById('form-dados').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const body = new URLSearchParams({
+document.getElementById('btn-salvar-tudo').addEventListener('click', function () {
+    const btn = this;
+    btn.disabled = true;
+
+    const clientBody = new URLSearchParams({
         name:  document.getElementById('field-name').value.trim(),
         email: document.getElementById('field-email').value.trim(),
         phone: document.getElementById('field-phone').value.trim(),
     });
-    fetch('/admin/clients/<?= $client['id'] ?>/update', { method: 'POST', body })
-        .then(r => r.json())
-        .then(data => {
-            showToast(data.message, data.success);
-            if (data.success && data.name) {
-                document.querySelector('h4.mb-0').textContent = data.name;
+
+    const projectBody = new URLSearchParams();
+    document.querySelectorAll('.project-name-input').forEach(input => {
+        projectBody.append(`projects[${input.dataset.id}]`, input.value.trim());
+    });
+
+    const saveClient  = fetch('/admin/clients/<?= $client['id'] ?>/update', { method: 'POST', body: clientBody }).then(r => r.json());
+    const hasProjects = document.querySelectorAll('.project-name-input').length > 0;
+    const saveProjects = hasProjects
+        ? fetch('/admin/projects/bulk-rename', { method: 'POST', body: projectBody }).then(r => r.json())
+        : Promise.resolve({ success: true });
+
+    Promise.all([saveClient, saveProjects])
+        .then(([clientData, projectData]) => {
+            const ok = clientData.success && projectData.success;
+            const msg = clientData.success
+                ? 'Dados salvos com sucesso.'
+                : clientData.message;
+            showToast(msg, ok);
+            if (clientData.success && clientData.name) {
+                document.getElementById('page-title').textContent = clientData.name;
             }
         })
-        .catch(() => showToast('Erro ao salvar os dados.', false));
-});
-
-document.querySelectorAll('.btn-edit-project').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id = this.dataset.id;
-        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.add('d-none');
-        this.classList.add('d-none');
-        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.remove('d-none');
-        document.querySelector(`.project-name-edit[data-id="${id}"] input`).focus();
-    });
-});
-
-document.querySelectorAll('.btn-cancel-project').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id = this.dataset.id;
-        document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
-        document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
-        document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
-    });
-});
-
-document.querySelectorAll('.btn-save-project').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const id    = this.dataset.id;
-        const input = document.querySelector(`.project-name-edit[data-id="${id}"] input`);
-        const name  = input.value.trim();
-        if (! name) return;
-
-        fetch(`/admin/projects/${id}/rename`, { method: 'POST', body: new URLSearchParams({ name }) })
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, data.success);
-                if (data.success) {
-                    document.querySelector(`.project-name-text[data-id="${id}"]`).textContent = data.name;
-                    input.value = data.name;
-                }
-                document.querySelector(`.project-name-edit[data-id="${id}"]`).classList.add('d-none');
-                document.querySelector(`.project-name-text[data-id="${id}"]`).classList.remove('d-none');
-                document.querySelector(`.btn-edit-project[data-id="${id}"]`).classList.remove('d-none');
-            })
-            .catch(() => showToast('Erro ao salvar o nome.', false));
-    });
+        .catch(() => showToast('Erro ao salvar.', false))
+        .finally(() => { btn.disabled = false; });
 });
 
 document.getElementById('btn-toggle-senha').addEventListener('click', function () {
@@ -282,8 +244,10 @@ document.getElementById('btn-confirmar-reset').addEventListener('click', functio
     }
     feedback.classList.add('d-none');
 
-    const body = new URLSearchParams({ password: senha });
-    fetch('/admin/clients/<?= $client['id'] ?>/reset-password', { method: 'POST', body })
+    fetch('/admin/clients/<?= $client['id'] ?>/reset-password', {
+        method: 'POST',
+        body:   new URLSearchParams({ password: senha }),
+    })
         .then(r => r.json())
         .then(data => {
             bootstrap.Modal.getInstance(document.getElementById('modal-reset-senha')).hide();

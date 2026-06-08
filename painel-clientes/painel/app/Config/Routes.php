@@ -27,6 +27,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('projects',             'Admin\Projects::index');
     $routes->get('projects/new',         'Admin\Projects::create');
     $routes->post('projects',            'Admin\Projects::store');
+    $routes->post('projects/bulk-rename',  'Admin\Projects::bulkRename');
     $routes->get('projects/(:num)',        'Admin\Projects::show/$1');
     $routes->post('projects/(:num)',       'Admin\Projects::update/$1');
     $routes->post('projects/(:num)/rename','Admin\Projects::rename/$1');

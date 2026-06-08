@@ -64,6 +64,19 @@ class Projects extends Controller
         ]);
     }
 
+    public function bulkRename()
+    {
+        $projects = $this->request->getPost('projects') ?? [];
+        $model    = new ProjectModel();
+        foreach ($projects as $id => $name) {
+            $name = trim($name);
+            if ($name !== '') {
+                $model->where('id', (int) $id)->set(['name' => $name])->update();
+            }
+        }
+        return $this->response->setJSON(['success' => true]);
+    }
+
     public function rename(int $id)
     {
         $project = (new ProjectModel())->find($id);
