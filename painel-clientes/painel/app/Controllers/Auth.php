@@ -23,7 +23,9 @@ class Auth extends Controller
         $user = (new UserModel())->where('email', $email)->where('active', true)->first();
 
         if (! $user || ! password_verify($password, $user['password'])) {
-            return redirect()->back()->with('error', 'E-mail ou senha inválidos.');
+            $host = $this->request->getServer('HTTP_HOST') ?? 'localhost:8080';
+            return redirect()->to('http://' . $host . '/login')
+                             ->with('error', 'E-mail ou senha inválidos.');
         }
 
         session()->set([
@@ -55,7 +57,9 @@ class Auth extends Controller
         ];
 
         if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            $host = $this->request->getServer('HTTP_HOST') ?? 'localhost:8081';
+            return redirect()->to('http://' . $host . '/register')
+                             ->withInput()->with('errors', $this->validator->getErrors());
         }
 
         (new UserModel())->insert([
@@ -65,7 +69,9 @@ class Auth extends Controller
             'role'     => 'client',
         ]);
 
-        return redirect()->to('/login')->with('success', 'Conta criada! Faça seu login.');
+        $host = $this->request->getServer('HTTP_HOST') ?? 'localhost:8081';
+        return redirect()->to('http://' . $host . '/login')
+                         ->with('success', 'Conta criada! Faça seu login.');
     }
 
     private function redirectByRole(): \CodeIgniter\HTTP\RedirectResponse
