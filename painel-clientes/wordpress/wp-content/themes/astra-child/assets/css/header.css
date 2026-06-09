@@ -1,0 +1,304 @@
+/* ── CSS Variables ─────────────────────────────────────── */
+:root {
+    --gps-primary:       #2563eb;
+    --gps-primary-hover: #1d4ed8;
+    --gps-text:          #1e293b;
+    --gps-muted:         #64748b;
+    --gps-bg:            #ffffff;
+    --gps-border:        #e2e8f0;
+    --gps-header-h:      72px;
+    --gps-radius:        8px;
+    --gps-shadow:        0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+    --gps-shadow-lg:     0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+}
+
+/* ── Skip link ─────────────────────────────────────────── */
+.skip-link.screen-reader-text {
+    clip: rect(1px, 1px, 1px, 1px);
+    position: absolute;
+    height: 1px; width: 1px;
+    overflow: hidden;
+}
+.skip-link.screen-reader-text:focus {
+    clip: auto;
+    display: block;
+    height: auto; width: auto;
+    background: var(--gps-primary);
+    color: #fff;
+    font-size: .875rem;
+    padding: 8px 16px;
+    position: fixed;
+    top: 8px; left: 8px;
+    z-index: 9999;
+    border-radius: var(--gps-radius);
+}
+
+/* ── Header Base ───────────────────────────────────────── */
+.gps-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--gps-bg);
+    border-bottom: 1px solid var(--gps-border);
+    transition: box-shadow .2s ease;
+}
+.gps-header.scrolled {
+    box-shadow: var(--gps-shadow-lg);
+}
+.gps-header__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: var(--gps-header-h);
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+/* ── Logo ──────────────────────────────────────────────── */
+.gps-header__logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.gps-header__logo img {
+    height: 38px;
+    width: auto;
+}
+.gps-header__site-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gps-text);
+    letter-spacing: -.025em;
+    white-space: nowrap;
+}
+
+/* ── Navigation ────────────────────────────────────────── */
+.gps-header__nav {
+    flex: 1;
+}
+.gps-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.gps-menu li {
+    position: relative;
+}
+.gps-menu li a {
+    display: block;
+    padding: 8px 14px;
+    color: var(--gps-muted);
+    text-decoration: none;
+    font-size: .9rem;
+    font-weight: 500;
+    border-radius: var(--gps-radius);
+    transition: color .15s, background .15s;
+    white-space: nowrap;
+}
+.gps-menu li a:hover,
+.gps-menu li.current-menu-item > a,
+.gps-menu li.current-page-ancestor > a {
+    color: var(--gps-text);
+    background: #f1f5f9;
+}
+
+/* ── Actions ───────────────────────────────────────────── */
+.gps-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
+.gps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    font-size: .875rem;
+    font-weight: 600;
+    border-radius: var(--gps-radius);
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    line-height: 1;
+    transition: background .15s, color .15s, border-color .15s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+.gps-btn--ghost {
+    background: transparent;
+    color: var(--gps-muted);
+    border: 1.5px solid var(--gps-border);
+}
+.gps-btn--ghost:hover {
+    color: var(--gps-text);
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.gps-btn--primary {
+    background: var(--gps-primary);
+    color: #fff !important;
+}
+.gps-btn--primary:hover {
+    background: var(--gps-primary-hover);
+}
+
+/* ── Dropdown ──────────────────────────────────────────── */
+.gps-dropdown {
+    position: relative;
+}
+.gps-dropdown__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.gps-dropdown__toggle svg:last-child {
+    transition: transform .2s ease;
+    flex-shrink: 0;
+}
+.gps-dropdown.open .gps-dropdown__toggle svg:last-child {
+    transform: rotate(180deg);
+}
+.gps-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 210px;
+    background: var(--gps-bg);
+    border: 1px solid var(--gps-border);
+    border-radius: var(--gps-radius);
+    box-shadow: var(--gps-shadow-lg);
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity .15s ease, transform .15s ease;
+    z-index: 100;
+}
+.gps-dropdown.open .gps-dropdown__menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+.gps-dropdown__menu li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    color: var(--gps-text);
+    text-decoration: none;
+    font-size: .875rem;
+    font-weight: 500;
+    border-radius: calc(var(--gps-radius) - 2px);
+    transition: background .12s;
+}
+.gps-dropdown__menu li a:hover {
+    background: #f1f5f9;
+}
+.gps-dropdown__menu li + li {
+    margin-top: 2px;
+}
+
+/* ── Hamburger ─────────────────────────────────────────── */
+.gps-header__hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: 1.5px solid var(--gps-border);
+    border-radius: var(--gps-radius);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+.gps-header__hamburger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--gps-text);
+    border-radius: 2px;
+    transition: transform .2s ease, opacity .2s ease;
+}
+.gps-header__hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.gps-header__hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+.gps-header__hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Mobile ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .gps-header__nav {
+        display: none;
+        position: absolute;
+        top: var(--gps-header-h);
+        left: 0;
+        right: 0;
+        background: var(--gps-bg);
+        border-bottom: 1px solid var(--gps-border);
+        padding: 12px 24px 20px;
+        box-shadow: var(--gps-shadow-lg);
+    }
+    .gps-header__nav.open {
+        display: block;
+    }
+    .gps-header {
+        position: relative;
+    }
+    .gps-menu {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    .gps-menu li a {
+        width: 100%;
+        font-size: .95rem;
+    }
+    .gps-header__hamburger {
+        display: flex;
+    }
+    .gps-header__actions .gps-btn--ghost {
+        display: none;
+    }
+    .gps-dropdown__menu {
+        right: auto;
+        left: 0;
+    }
+}
+
+/* ── Utility: reset list inside WP nav ────────────────── */
+.gps-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── CSS-only dropdown (hover + focus-within) ──────────── */
+@media (hover: hover) {
+    .gps-dropdown:hover .gps-dropdown__menu {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+}
+.gps-dropdown:focus-within .gps-dropdown__menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}

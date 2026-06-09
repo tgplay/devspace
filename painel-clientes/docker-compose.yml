@@ -4,11 +4,14 @@ services:
     ports:
       - "8080:8080"
       - "8081:8081"
+      - "8082:8082"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./painel:/var/www/painel:ro
+      - ./wordpress:/var/www/html:ro
     depends_on:
       - php
+      - wordpress
     restart: unless-stopped
 
   php:
@@ -41,5 +44,37 @@ services:
       retries: 10
     restart: unless-stopped
 
+  wordpress:
+    image: wordpress:6.5-php8.2-fpm-alpine
+    volumes:
+      - ./wordpress:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_pass
+      WORDPRESS_TABLE_PREFIX: wp_
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_pass
+      MYSQL_ROOT_PASSWORD: wp_root_pass
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=wp_root_pass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  mysqldata:

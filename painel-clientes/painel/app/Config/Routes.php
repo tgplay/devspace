@@ -4,6 +4,9 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
+// ── API pública (site WordPress → CI4) ─────────────────────────────────────
+$routes->post('api/contact/ticket', 'Api\Contact::ticket');
+
 // ── Autenticação (pública) ──────────────────────────────────────────────────
 $routes->get('/',              'Auth::loginForm');
 $routes->get('login',          'Auth::loginForm');

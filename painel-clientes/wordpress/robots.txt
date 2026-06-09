@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+Disallow: /wp-admin/
+Disallow: /wp-login.php
+Disallow: /wp-json/
+Disallow: /xmlrpc.php
+Disallow: /?s=
+Disallow: /feed/
+Disallow: /comments/feed/
+
+Sitemap: https://devspace.com.br/wp-sitemap.xml

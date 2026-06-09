@@ -25,3 +25,23 @@ painel/preload.php
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+# ── WordPress: ignorar core, rastrear só customizações ──
+wordpress/wp-admin/
+wordpress/wp-includes/
+wordpress/wp-content/plugins/
+wordpress/wp-content/uploads/
+wordpress/wp-content/upgrade/
+wordpress/wp-content/themes/astra/
+wordpress/wp-content/themes/twenty*/
+wordpress/wp-config.php
+wordpress/wp-config-sample.php
+wordpress/wp-*.php
+wordpress/*.php
+wordpress/*.html
+wordpress/xmlrpc.php
+wordpress/license.txt
+wordpress/readme.html
+# exceções: manter robots.txt e o tema filho completo
+!wordpress/robots.txt
+!wordpress/wp-content/themes/astra-child/
