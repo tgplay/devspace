@@ -4,6 +4,7 @@ namespace Config;
 
 use App\Filters\AdminFilter;
 use App\Filters\AuthFilter;
+use App\Filters\DynamicBaseUrl;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => AuthFilter::class,
         'admin'         => AdminFilter::class,
+        'dynamicbaseurl' => DynamicBaseUrl::class,
     ];
 
     /**
@@ -76,6 +78,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'dynamicbaseurl',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
