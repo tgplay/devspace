@@ -42,6 +42,12 @@ wordpress/*.html
 wordpress/xmlrpc.php
 wordpress/license.txt
 wordpress/readme.html
+# arquivos gerados automaticamente pelo WordPress
+wordpress/.htaccess
+wordpress/wp-cli.phar
+wordpress/wp-content/index.php
+wordpress/wp-content/languages/
+wordpress/wp-content/themes/index.php
 # exceções: manter robots.txt e o tema filho completo
 !wordpress/robots.txt
 !wordpress/wp-content/themes/astra-child/
