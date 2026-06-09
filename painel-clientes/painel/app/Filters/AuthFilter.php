@@ -13,6 +13,10 @@ class AuthFilter implements FilterInterface
         if (! session()->get('user_id')) {
             return redirect()->to('/login')->with('error', 'Faça login para continuar.');
         }
+
+        if (session()->get('user_role') === 'admin') {
+            return redirect()->to('http://localhost:8080/admin');
+        }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null) {}

@@ -26,16 +26,6 @@ class Auth extends Controller
             return redirect()->back()->with('error', 'E-mail ou senha inválidos.');
         }
 
-        $section = $this->request->getServer('APP_SECTION');
-
-        if ($section === 'admin' && $user['role'] !== 'admin') {
-            return redirect()->back()->with('error', 'Suas credenciais não têm acesso a este portal.');
-        }
-
-        if ($section === 'client' && $user['role'] !== 'client') {
-            return redirect()->back()->with('error', 'Suas credenciais não têm acesso a este portal.');
-        }
-
         session()->set([
             'user_id'   => $user['id'],
             'user_name' => $user['name'],
