@@ -37,6 +37,15 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('support',              'Admin\Support::index');
     $routes->get('support/(:num)',       'Admin\Support::show/$1');
     $routes->post('support/(:num)',      'Admin\Support::reply/$1');
+
+    $routes->get('prospects',                       'Admin\Prospects::index');
+    $routes->get('prospects/new',                   'Admin\Prospects::create');
+    $routes->post('prospects',                      'Admin\Prospects::store');
+    $routes->get('prospects/(:num)',                'Admin\Prospects::show/$1');
+    $routes->post('prospects/(:num)',               'Admin\Prospects::update/$1');
+    $routes->post('prospects/(:num)/status',        'Admin\Prospects::updateStatus/$1');
+    $routes->post('prospects/(:num)/delete',        'Admin\Prospects::delete/$1');
+    $routes->post('prospects/(:num)/convert',       'Admin\Prospects::convertToClient/$1');
 });
 
 // ── Dashboard do Cliente ────────────────────────────────────────────────────

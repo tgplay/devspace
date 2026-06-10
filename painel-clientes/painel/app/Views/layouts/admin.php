@@ -32,6 +32,10 @@
             <a href="/admin/projects" class="<?= str_starts_with(uri_string(), 'admin/projects') ? 'active' : '' ?>">
                 <i class="bi bi-folder me-2"></i> Projetos
             </a>
+            <div class="nav-label">Vendas</div>
+            <a href="/admin/prospects" class="<?= str_starts_with(uri_string(), 'admin/prospects') ? 'active' : '' ?>">
+                <i class="bi bi-person-plus me-2"></i> Prospectos
+            </a>
             <div class="nav-label">Suporte</div>
             <a href="/admin/support" class="<?= str_starts_with(uri_string(), 'admin/support') ? 'active' : '' ?>">
                 <i class="bi bi-headset me-2"></i> Chamados
@@ -45,6 +49,10 @@
         <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <?= esc(session()->getFlashdata('success')) ?>
+                <?php if ($pwd = session()->getFlashdata('temp_password')): ?>
+                    <br><code class="user-select-all fs-6"><?= esc($pwd) ?></code>
+                    <span class="small ms-1 text-muted">(copie antes de sair)</span>
+                <?php endif ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif ?>

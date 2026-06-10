@@ -132,6 +132,26 @@ CREATE TABLE notifications (
 );
 
 -- ============================================================
+-- Prospectos (pipeline de vendas)
+-- ============================================================
+CREATE TABLE prospects (
+    id          SERIAL PRIMARY KEY,
+    name        VARCHAR(200)        NOT NULL,
+    email       VARCHAR(180)        NOT NULL,
+    phone       VARCHAR(30),
+    company     VARCHAR(200),
+    interest    VARCHAR(30)         NOT NULL DEFAULT 'other'
+                  CHECK (interest IN ('site', 'app', 'system', 'other')),
+    source      VARCHAR(30)         NOT NULL DEFAULT 'website'
+                  CHECK (source IN ('website', 'referral', 'social', 'email', 'other')),
+    status      VARCHAR(30)         NOT NULL DEFAULT 'new'
+                  CHECK (status IN ('new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost')),
+    notes       TEXT,
+    created_at  TIMESTAMP           NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMP           NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================
 -- Índices
 -- ============================================================
 CREATE INDEX idx_projects_client    ON projects(client_id);
@@ -141,3 +161,5 @@ CREATE INDEX idx_ticket_msgs_ticket ON ticket_messages(ticket_id);
 CREATE INDEX idx_invoices_client    ON invoices(client_id);
 CREATE INDEX idx_documents_client   ON documents(client_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_prospects_status   ON prospects(status);
+CREATE INDEX idx_prospects_created  ON prospects(created_at);
