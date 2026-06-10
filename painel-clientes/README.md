@@ -207,6 +207,17 @@ O CI4 responde com JSON `{ success: true, message: "..." }` que o JS do formulá
 - **Botão "Login"**: aponta para `/login` no CI4; após autenticação o CI4 redireciona para o dashboard conforme o papel (cliente → `/app`, admin → `/admin`)
 - **Dropdown "Atendimento"**: CSS-only (`:hover` + `:focus-within`), sem JS — links para `/contato?tipo=vendas` e `/contato?tipo=suporte`
 - **Hamburger**: JS inline mínimo em `header.php`, toggling classe `.open` no nav
+- **Alternância dark/light**: botão lua/sol no header; preferência salva em `localStorage`; anti-flash via script inline no `<head>` antes do CSS
+
+### Dark Mode
+
+O site suporta alternância entre tema claro e escuro em todo o conteúdo:
+
+- Ativado via atributo `html[data-theme="dark"]` no elemento raiz
+- CSS custom properties redefinidas para o tema escuro em `assets/css/header.css`
+- Seletores de atributo (`[style*="background-color:#ffffff"]`) sobrescrevem estilos inline do Gutenberg com `!important`
+- Preferência persistida em `localStorage` (`gps-theme`) — mantida entre sessões e páginas
+- Script anti-flash no `<head>` aplica o tema antes do primeiro render, eliminando flash branco
 
 ### SEO implementado
 
@@ -260,8 +271,45 @@ Implementado em `inc/cookie-banner.php`, injetado via `wp_footer`. Exibe faixa e
 | `invoices` | Faturas financeiras |
 | `documents` | Arquivos e documentos entregues |
 | `notifications` | Notificações do cliente |
+| `prospects` | Pipeline de vendas (leads e prospectos) |
+| `contract_templates` | Modelos reutilizáveis de contrato |
+| `contracts` | Contratos emitidos para clientes com aceite digital |
 
 Criado automaticamente na primeira subida via `db/init.sql`.
+
+### Pipeline de Vendas (Prospectos)
+
+Acessível em `/admin/prospects`. Gerencia o ciclo de vida de leads em 6 estágios:
+
+```
+Novo → Contatado → Qualificado → Proposta enviada → Ganho / Perdido
+```
+
+| Recurso | Detalhe |
+|---|---|
+| Listagem com filtros | Filtra por status; contadores por estágio no topo |
+| Troca de status inline | Select na listagem faz AJAX → `POST /admin/prospects/:id/status` |
+| Ficha completa | Nome, e-mail, telefone (WhatsApp direto), empresa, interesse, origem, notas |
+| Converter em cliente | Cria conta na tabela `users` (role `client`) com senha temporária exibida em flash |
+
+### Contratos
+
+Acessível em `/admin/contracts`. Fluxo completo de emissão e aceite digital:
+
+```
+Admin cria rascunho → envia ao cliente → cliente aceita → encerrado
+```
+
+| Recurso | Detalhe |
+|---|---|
+| Modelos reutilizáveis | Editor rich text (Quill.js) em `/admin/contract-templates` |
+| Criação de contrato | Seleciona cliente, projeto (opcional), carrega modelo como base e edita o conteúdo |
+| Envio ao cliente | Botão "Enviar ao cliente" muda status `draft → sent`; contrato aparece na área do cliente |
+| Aceite digital | Cliente lê o contrato e clica "Li e aceito os termos"; registra `accepted_at` e `accepted_ip` |
+| Rastreabilidade | Admin visualiza data/hora e IP do aceite na página do contrato |
+| Vinculação | Contrato pode ser associado a um projeto específico; suporta valor e datas de vigência |
+
+Clientes acessam seus contratos em **Documentos → aba Contratos** (`/app/documents`).
 
 ### Endpoint público `/api/contact/ticket`
 
