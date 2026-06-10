@@ -38,7 +38,7 @@
             <a href="/app/financial" class="<?= str_starts_with(uri_string(), 'app/financial') ? 'active' : '' ?>">
                 <i class="bi bi-receipt me-2"></i> Faturas
             </a>
-            <a href="/app/documents" class="<?= str_starts_with(uri_string(), 'app/documents') ? 'active' : '' ?>">
+            <a href="/app/documents" class="<?= (str_starts_with(uri_string(), 'app/documents') || str_starts_with(uri_string(), 'app/contracts')) ? 'active' : '' ?>">
                 <i class="bi bi-file-earmark me-2"></i> Documentos
             </a>
         </nav>

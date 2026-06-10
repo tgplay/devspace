@@ -38,6 +38,21 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('support/(:num)',       'Admin\Support::show/$1');
     $routes->post('support/(:num)',      'Admin\Support::reply/$1');
 
+    $routes->get('contracts',                         'Admin\Contracts::index');
+    $routes->get('contracts/new',                    'Admin\Contracts::create');
+    $routes->post('contracts',                       'Admin\Contracts::store');
+    $routes->get('contracts/(:num)',                 'Admin\Contracts::show/$1');
+    $routes->post('contracts/(:num)',                'Admin\Contracts::update/$1');
+    $routes->post('contracts/(:num)/send',           'Admin\Contracts::send/$1');
+    $routes->post('contracts/(:num)/delete',         'Admin\Contracts::delete/$1');
+    $routes->get('contract-templates',               'Admin\ContractTemplates::index');
+    $routes->get('contract-templates/new',           'Admin\ContractTemplates::create');
+    $routes->post('contract-templates',              'Admin\ContractTemplates::store');
+    $routes->get('contract-templates/(:num)',        'Admin\ContractTemplates::show/$1');
+    $routes->post('contract-templates/(:num)',       'Admin\ContractTemplates::update/$1');
+    $routes->post('contract-templates/(:num)/delete','Admin\ContractTemplates::delete/$1');
+    $routes->get('contract-templates/(:num)/content','Admin\ContractTemplates::content/$1');
+
     $routes->get('prospects',                       'Admin\Prospects::index');
     $routes->get('prospects/new',                   'Admin\Prospects::create');
     $routes->post('prospects',                      'Admin\Prospects::store');
@@ -56,6 +71,8 @@ $routes->group('app', ['filter' => 'auth'], function ($routes) {
     $routes->get('projects/(:num)',            'Client\Projects::show/$1');
     $routes->post('tasks/(:num)/approve',      'Client\Tasks::approve/$1');
     $routes->post('tasks/(:num)/request-revision', 'Client\Tasks::requestRevision/$1');
+    $routes->get('contracts/(:num)',             'Client\Contracts::show/$1');
+    $routes->post('contracts/(:num)/accept',     'Client\Contracts::accept/$1');
     $routes->get('support',                    'Client\Support::index');
     $routes->get('support/new',                'Client\Support::newTicket');
     $routes->post('support',                   'Client\Support::store');

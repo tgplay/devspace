@@ -152,6 +152,38 @@ CREATE TABLE prospects (
 );
 
 -- ============================================================
+-- Modelos de contrato
+-- ============================================================
+CREATE TABLE contract_templates (
+    id          SERIAL PRIMARY KEY,
+    name        VARCHAR(150)    NOT NULL,
+    content     TEXT            NOT NULL DEFAULT '',
+    created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMP       NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================
+-- Contratos (gerados pelo admin, aceitos pelo cliente)
+-- ============================================================
+CREATE TABLE contracts (
+    id          SERIAL PRIMARY KEY,
+    client_id   INTEGER         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    project_id  INTEGER         REFERENCES projects(id) ON DELETE SET NULL,
+    template_id INTEGER         REFERENCES contract_templates(id) ON DELETE SET NULL,
+    title       VARCHAR(200)    NOT NULL,
+    content     TEXT            NOT NULL DEFAULT '',
+    value       NUMERIC(12,2),
+    start_date  DATE,
+    end_date    DATE,
+    status      VARCHAR(20)     NOT NULL DEFAULT 'draft'
+                  CHECK (status IN ('draft', 'sent', 'accepted', 'closed')),
+    accepted_at TIMESTAMP,
+    accepted_ip VARCHAR(45),
+    created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMP       NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================
 -- Índices
 -- ============================================================
 CREATE INDEX idx_projects_client    ON projects(client_id);
@@ -163,3 +195,5 @@ CREATE INDEX idx_documents_client   ON documents(client_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_prospects_status   ON prospects(status);
 CREATE INDEX idx_prospects_created  ON prospects(created_at);
+CREATE INDEX idx_contracts_client   ON contracts(client_id);
+CREATE INDEX idx_contracts_status   ON contracts(status);

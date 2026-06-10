@@ -36,6 +36,12 @@
             <a href="/admin/prospects" class="<?= str_starts_with(uri_string(), 'admin/prospects') ? 'active' : '' ?>">
                 <i class="bi bi-person-plus me-2"></i> Prospectos
             </a>
+            <a href="/admin/contracts" class="<?= str_starts_with(uri_string(), 'admin/contracts') ? 'active' : '' ?>">
+                <i class="bi bi-file-earmark-text me-2"></i> Contratos
+            </a>
+            <a href="/admin/contract-templates" class="<?= str_starts_with(uri_string(), 'admin/contract-templates') ? 'active' : '' ?>">
+                <i class="bi bi-file-earmark-ruled me-2"></i> Modelos
+            </a>
             <div class="nav-label">Suporte</div>
             <a href="/admin/support" class="<?= str_starts_with(uri_string(), 'admin/support') ? 'active' : '' ?>">
                 <i class="bi bi-headset me-2"></i> Chamados
