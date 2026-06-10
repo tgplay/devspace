@@ -1,6 +1,8 @@
 <?php
 defined('ABSPATH') || exit;
 
+define('GPS_CLIENT_PORTAL_URL', rtrim(getenv('CLIENT_PORTAL_URL') ?: 'http://localhost:8081', '/'));
+
 /* ──────────────────────────────────────────────
    Suporte ao tema
 ────────────────────────────────────────────── */
@@ -21,7 +23,7 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('gps-header',   get_stylesheet_directory_uri() . '/assets/css/header.css', [], '1.0.0');
 
     wp_localize_script('wp-api-fetch', 'gpsConfig', [
-        'clientPortalUrl' => 'http://localhost:8081/app',
+        'clientPortalUrl' => GPS_CLIENT_PORTAL_URL . '/app',
         'restUrl'         => rest_url('gps/v1/contact'),
         'nonce'           => wp_create_nonce('wp_rest'),
     ]);

@@ -49,7 +49,7 @@ defined('ABSPATH') || exit;
         <div class="gps-header__actions">
 
             <!-- Entrar -->
-            <a href="<?php echo esc_url('http://localhost:8081/login'); ?>"
+            <a href="<?php echo esc_url(GPS_CLIENT_PORTAL_URL . '/login'); ?>"
                class="gps-btn gps-btn--ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4"/>
