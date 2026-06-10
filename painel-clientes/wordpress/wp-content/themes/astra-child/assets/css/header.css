@@ -302,3 +302,222 @@
     pointer-events: auto;
     transform: translateY(0);
 }
+
+/* ── Theme Toggle Button ───────────────────────────────── */
+.gps-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: 1.5px solid var(--gps-border);
+    border-radius: var(--gps-radius);
+    color: var(--gps-muted);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: color .15s, background .15s, border-color .15s;
+}
+.gps-theme-toggle:hover {
+    color: var(--gps-text);
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.gps-theme-toggle .icon-sun { display: none; }
+html[data-theme="dark"] .gps-theme-toggle .icon-moon { display: none; }
+html[data-theme="dark"] .gps-theme-toggle .icon-sun  { display: block; }
+
+/* ── Dark Mode Variables ───────────────────────────────── */
+html[data-theme="dark"] {
+    --gps-primary:       #3b82f6;
+    --gps-primary-hover: #2563eb;
+    --gps-text:          #f1f5f9;
+    --gps-muted:         #94a3b8;
+    --gps-bg:            #0f172a;
+    --gps-border:        #1e293b;
+    --gps-shadow:        0 1px 3px 0 rgb(0 0 0 / .4), 0 1px 2px -1px rgb(0 0 0 / .4);
+    --gps-shadow-lg:     0 10px 15px -3px rgb(0 0 0 / .5), 0 4px 6px -4px rgb(0 0 0 / .4);
+}
+
+/* ── Dark Mode: body & page ────────────────────────────── */
+body {
+    transition: background-color .25s ease, color .25s ease;
+}
+html[data-theme="dark"] body {
+    background-color: #0f172a;
+    color: #f1f5f9;
+}
+
+/* ── Dark Mode: hardcoded color overrides ──────────────── */
+html[data-theme="dark"] .gps-menu li a:hover,
+html[data-theme="dark"] .gps-menu li.current-menu-item > a,
+html[data-theme="dark"] .gps-menu li.current-page-ancestor > a {
+    background: #1e293b;
+}
+html[data-theme="dark"] .gps-btn--ghost:hover {
+    background: #1e293b;
+    border-color: #334155;
+}
+html[data-theme="dark"] .gps-dropdown__menu li a:hover {
+    background: #1e293b;
+}
+html[data-theme="dark"] .gps-theme-toggle:hover {
+    background: #1e293b;
+    border-color: #334155;
+}
+html[data-theme="dark"] .gps-header__hamburger span {
+    background: var(--gps-text);
+}
+
+/* ─── DARK MODE: Site-wide overrides ──────────────────────── */
+
+/* Astra / WordPress containers */
+html[data-theme="dark"] .site,
+html[data-theme="dark"] #page,
+html[data-theme="dark"] #primary,
+html[data-theme="dark"] .site-content,
+html[data-theme="dark"] .entry-content,
+html[data-theme="dark"] .ast-container,
+html[data-theme="dark"] .wp-block-column,
+html[data-theme="dark"] .wp-block-columns {
+    background-color: transparent;
+    color: inherit;
+}
+
+/* Section backgrounds via inline styles */
+html[data-theme="dark"] [style*="background-color:#ffffff"],
+html[data-theme="dark"] [style*="background-color: #ffffff"] {
+    background-color: #1e293b !important;
+}
+html[data-theme="dark"] [style*="background-color:#f8fafc"],
+html[data-theme="dark"] [style*="background-color: #f8fafc"],
+html[data-theme="dark"] [style*="background-color:#f1f5f9"],
+html[data-theme="dark"] [style*="background-color: #f1f5f9"] {
+    background-color: #0f172a !important;
+}
+
+/* Inline text: dark shades → light */
+html[data-theme="dark"] [style*="color:#1e293b"],
+html[data-theme="dark"] [style*="color: #1e293b"],
+html[data-theme="dark"] [style*="color:#0f172a"],
+html[data-theme="dark"] [style*="color: #0f172a"] {
+    color: #f1f5f9 !important;
+}
+html[data-theme="dark"] [style*="color:#64748b"],
+html[data-theme="dark"] [style*="color: #64748b"],
+html[data-theme="dark"] [style*="color:#475569"],
+html[data-theme="dark"] [style*="color: #475569"],
+html[data-theme="dark"] [style*="color:#374151"],
+html[data-theme="dark"] [style*="color: #374151"] {
+    color: #94a3b8 !important;
+}
+
+/* Headings without inline color */
+html[data-theme="dark"] .wp-block-heading:not([style*="color:"]) {
+    color: #f1f5f9;
+}
+
+/* ── Cards: serviços home ── */
+html[data-theme="dark"] .dv-svc-card {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+html[data-theme="dark"] .dv-svc-card h3 { color: #f1f5f9; }
+html[data-theme="dark"] .dv-svc-card p  { color: #94a3b8; }
+html[data-theme="dark"] .dv-svc-card a  { color: #60a5fa; }
+
+/* ── Cards: diferenciais ── */
+html[data-theme="dark"] .dv-diff-item {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+html[data-theme="dark"] .dv-diff-item strong { color: #f1f5f9; }
+html[data-theme="dark"] .dv-diff-item p      { color: #94a3b8; }
+
+/* ── Cards: portfólio (home + página) ── */
+html[data-theme="dark"] .dv-port-card,
+html[data-theme="dark"] .dv-pf-card {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+html[data-theme="dark"] .dv-port-info h4,
+html[data-theme="dark"] .dv-pf-body h3  { color: #f1f5f9; }
+html[data-theme="dark"] .dv-port-info p,
+html[data-theme="dark"] .dv-pf-body p   { color: #94a3b8; }
+html[data-theme="dark"] .dv-port-techs span,
+html[data-theme="dark"] .dv-pf-techs span {
+    color: #94a3b8;
+    background-color: #0f172a;
+    border-color: #334155;
+}
+
+/* ── Filtros de portfólio ── */
+html[data-theme="dark"] .dv-filter {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+html[data-theme="dark"] .dv-filter.active {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+html[data-theme="dark"] .dv-filter:hover:not(.active) {
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+/* ── Página de Serviços ── */
+html[data-theme="dark"] .dv-svc-content h2  { color: #f1f5f9; }
+html[data-theme="dark"] .dv-svc-content > p { color: #94a3b8; }
+html[data-theme="dark"] .dv-feature-list li { color: #cbd5e1; }
+html[data-theme="dark"] .dv-for-whom {
+    background-color: #1e293b;
+}
+html[data-theme="dark"] .dv-for-whom strong { color: #f1f5f9; }
+html[data-theme="dark"] .dv-for-whom p      { color: #94a3b8; }
+html[data-theme="dark"] .dv-svc-badge {
+    background-color: #1e3a5f;
+    color: #60a5fa;
+}
+html[data-theme="dark"] .dv-visual-site { background: linear-gradient(135deg,#1e3a5f,#1e40af); }
+html[data-theme="dark"] .dv-visual-app  { background: linear-gradient(135deg,#052e16,#14532d); }
+html[data-theme="dark"] .dv-visual-sys  { background: linear-gradient(135deg,#2e1065,#4c1d95); }
+
+/* ── Contato: channel cards ── */
+html[data-theme="dark"] .gps-ch-card {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+html[data-theme="dark"] .gps-ch-body strong { color: #f1f5f9; }
+
+/* ── Formulário de contato ── */
+html[data-theme="dark"] .gps-form__group label {
+    color: #94a3b8;
+}
+html[data-theme="dark"] .gps-form__group input,
+html[data-theme="dark"] .gps-form__group select,
+html[data-theme="dark"] .gps-form__group textarea {
+    background-color: #1e293b;
+    color: #f1f5f9;
+    border-color: #334155;
+}
+html[data-theme="dark"] .gps-form__group input::placeholder,
+html[data-theme="dark"] .gps-form__group textarea::placeholder {
+    color: #475569;
+}
+html[data-theme="dark"] .gps-form__group input:focus,
+html[data-theme="dark"] .gps-form__group select:focus,
+html[data-theme="dark"] .gps-form__group textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.2);
+}
+html[data-theme="dark"] .gps-form__feedback.success {
+    background-color: #052e16;
+    border-color: #166534;
+}
+html[data-theme="dark"] .gps-form__feedback.error {
+    background-color: #450a0a;
+    border-color: #991b1b;
+}

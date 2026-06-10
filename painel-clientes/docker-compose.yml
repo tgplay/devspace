@@ -48,6 +48,7 @@ services:
     image: wordpress:6.5-php8.2-fpm-alpine
     volumes:
       - ./wordpress:/var/www/html
+      - ./php/wordpress.ini:/usr/local/etc/php/conf.d/wordpress.ini:ro
     environment:
       WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_NAME: wordpress
