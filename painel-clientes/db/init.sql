@@ -137,18 +137,21 @@ CREATE TABLE notifications (
 CREATE TABLE prospects (
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(200)        NOT NULL,
-    email       VARCHAR(180)        NOT NULL,
-    phone       VARCHAR(30),
-    company     VARCHAR(200),
-    interest    VARCHAR(30)         NOT NULL DEFAULT 'other'
-                  CHECK (interest IN ('site', 'app', 'system', 'other')),
-    source      VARCHAR(30)         NOT NULL DEFAULT 'website'
-                  CHECK (source IN ('website', 'referral', 'social', 'email', 'other')),
-    status      VARCHAR(30)         NOT NULL DEFAULT 'new'
-                  CHECK (status IN ('new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost')),
-    notes       TEXT,
-    created_at  TIMESTAMP           NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMP           NOT NULL DEFAULT NOW()
+    email         VARCHAR(180),
+    phone         VARCHAR(30),
+    company       VARCHAR(200),
+    interest      VARCHAR(30)       NOT NULL DEFAULT 'other'
+                    CHECK (interest IN ('site', 'app', 'system', 'other')),
+    source        VARCHAR(30)       NOT NULL DEFAULT 'website'
+                    CHECK (source IN ('website', 'referral', 'social', 'email', 'other', 'google_maps')),
+    status        VARCHAR(30)       NOT NULL DEFAULT 'new'
+                    CHECK (status IN ('new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost')),
+    notes         TEXT,
+    rating        NUMERIC(2,1),
+    reviews_count INTEGER,
+    maps_url      VARCHAR(500),
+    created_at    TIMESTAMP         NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP         NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================

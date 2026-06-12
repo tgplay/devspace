@@ -21,7 +21,7 @@ $statusBadge = [
     'lost'          => 'danger',
 ];
 $interestOpts = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
-$sourceOpts   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro'];
+$sourceOpts   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];
 
 $action = $isNew ? '/admin/prospects' : "/admin/prospects/{$prospect['id']}";
 $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
@@ -56,9 +56,9 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
                                    value="<?= esc(old('name', $prospect['name'] ?? '')) ?>" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">E-mail *</label>
+                            <label class="form-label fw-semibold">E-mail</label>
                             <input type="email" name="email" class="form-control"
-                                   value="<?= esc(old('email', $prospect['email'] ?? '')) ?>" required>
+                                   value="<?= esc(old('email', $prospect['email'] ?? '')) ?>">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Telefone / WhatsApp</label>
@@ -106,6 +106,27 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
                             </select>
                         </div>
                         <?php endif ?>
+
+                        <!-- Dados do Google Maps -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Avaliação Google ⭐</label>
+                            <input type="number" name="rating" class="form-control" step="0.1" min="0" max="5"
+                                   placeholder="ex: 4.5"
+                                   value="<?= esc(old('rating', $prospect['rating'] ?? '')) ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Nº de avaliações</label>
+                            <input type="number" name="reviews_count" class="form-control" min="0"
+                                   placeholder="ex: 128"
+                                   value="<?= esc(old('reviews_count', $prospect['reviews_count'] ?? '')) ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Link Google Maps</label>
+                            <input type="url" name="maps_url" class="form-control"
+                                   placeholder="https://maps.google.com/..."
+                                   value="<?= esc(old('maps_url', $prospect['maps_url'] ?? '')) ?>">
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label fw-semibold">Notas internas</label>
                             <textarea name="notes" class="form-control" rows="5"
@@ -150,12 +171,72 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
                     </a>
                 </li>
                 <?php endif ?>
+                <?php if ($prospect['email']): ?>
                 <li class="list-group-item">
                     <div class="text-muted small mb-1">E-mail</div>
                     <a href="mailto:<?= esc($prospect['email']) ?>"><?= esc($prospect['email']) ?></a>
                 </li>
+                <?php endif ?>
+                <?php if ($prospect['maps_url']): ?>
+                <li class="list-group-item">
+                    <div class="text-muted small mb-1">Google Maps</div>
+                    <a href="<?= esc($prospect['maps_url']) ?>" target="_blank" rel="noopener"
+                       class="text-decoration-none small">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>Ver perfil
+                    </a>
+                    <?php if ($prospect['rating'] || $prospect['reviews_count']): ?>
+                    <div class="mt-1">
+                        <?php if ($prospect['rating']): ?>
+                        <span class="badge text-bg-warning text-dark me-1">⭐ <?= number_format((float)$prospect['rating'], 1) ?></span>
+                        <?php endif ?>
+                        <?php if ($prospect['reviews_count']): ?>
+                        <span class="text-muted small"><?= number_format((int)$prospect['reviews_count']) ?> avaliações</span>
+                        <?php endif ?>
+                    </div>
+                    <?php endif ?>
+                </li>
+                <?php endif ?>
             </ul>
         </div>
+
+        <!-- Gerador de mensagem WhatsApp -->
+        <?php if ($prospect['phone']): ?>
+        <?php
+        $pName    = $prospect['name'];
+        $pRating  = $prospect['rating']        ? number_format((float)$prospect['rating'], 1, ',', '') : '??';
+        $pReviews = $prospect['reviews_count'] ? number_format((int)$prospect['reviews_count']) : '??';
+        $waMsg    = "Olá! Vi que o {$pName} tem {$pReviews} avaliações no Google com {$pRating} estrelas — parabéns! Percebi que vocês ainda não têm um site. Isso pode estar fazendo vocês perderem clientes que pesquisam no Google antes de decidir onde ir. Posso mostrar exatamente quantas pessoas pesquisam por vocês e não te encontram? Faço um diagnóstico rápido, sem compromisso.";
+        $waPhone  = preg_replace('/\D/', '', $prospect['phone']);
+        $waLink   = 'https://wa.me/55' . $waPhone . '?text=' . rawurlencode($waMsg);
+        ?>
+        <div class="card">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-whatsapp text-success me-1"></i> Mensagem de abordagem
+            </div>
+            <div class="card-body">
+                <textarea id="wa-message" class="form-control form-control-sm mb-2" rows="6"
+                          readonly style="font-size:.82rem; resize:none;"><?= esc($waMsg) ?></textarea>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyWaMessage()">
+                        <i class="bi bi-clipboard me-1"></i><span id="copy-label">Copiar</span>
+                    </button>
+                    <a href="<?= $waLink ?>" target="_blank" rel="noopener" class="btn btn-sm btn-success">
+                        <i class="bi bi-whatsapp me-1"></i>Abrir WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+        <script>
+        function copyWaMessage() {
+            const text = document.getElementById('wa-message').value;
+            navigator.clipboard.writeText(text).then(function() {
+                const lbl = document.getElementById('copy-label');
+                lbl.textContent = 'Copiado!';
+                setTimeout(function() { lbl.textContent = 'Copiar'; }, 2000);
+            });
+        }
+        </script>
+        <?php endif ?>
 
         <!-- Ações -->
         <div class="card">

@@ -19,16 +19,21 @@ $statusBadge = [
     'lost'          => 'danger',
 ];
 $interestLabel = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
-$sourceLabel   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro'];
+$sourceLabel   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];
 
 $total = array_sum($statusCounts);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Prospectos</h4>
-    <a href="/admin/prospects/new" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg me-1"></i> Novo prospecto
-    </a>
+    <div class="d-flex gap-2">
+        <a href="/admin/prospects/import" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-upload me-1"></i> Importar CSV
+        </a>
+        <a href="/admin/prospects/new" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Novo prospecto
+        </a>
+    </div>
 </div>
 
 <!-- Pipeline summary -->
@@ -80,12 +85,44 @@ $total = array_sum($statusCounts);
                 <?php foreach ($prospects as $p): ?>
                 <tr id="row-<?= $p['id'] ?>">
                     <td>
-                        <div class="fw-semibold"><?= esc($p['name']) ?></div>
+                        <div class="fw-semibold">
+                            <?= esc($p['name']) ?>
+                            <?php if (! empty($p['maps_url'])): ?>
+                            <a href="<?= esc($p['maps_url']) ?>" target="_blank" rel="noopener"
+                               class="text-muted ms-1" title="Ver no Google Maps">
+                                <i class="bi bi-geo-alt-fill" style="font-size:.75rem"></i>
+                            </a>
+                            <?php endif ?>
+                        </div>
+                        <?php if (! empty($p['email'])): ?>
                         <div class="text-muted small"><?= esc($p['email']) ?></div>
+                        <?php endif ?>
+                        <?php if (! empty($p['rating']) || ! empty($p['reviews_count'])): ?>
+                        <div class="mt-1">
+                            <?php if (! empty($p['rating'])): ?>
+                            <span class="badge text-bg-warning text-dark" style="font-size:.7rem">
+                                ⭐ <?= number_format((float)$p['rating'], 1) ?>
+                            </span>
+                            <?php endif ?>
+                            <?php if (! empty($p['reviews_count'])): ?>
+                            <span class="text-muted" style="font-size:.75rem">
+                                <?= number_format((int)$p['reviews_count']) ?> avaliações
+                            </span>
+                            <?php endif ?>
+                        </div>
+                        <?php endif ?>
                     </td>
                     <td><?= esc($p['company'] ?? '—') ?></td>
                     <td><?= $interestLabel[$p['interest']] ?? esc($p['interest']) ?></td>
-                    <td><?= $sourceLabel[$p['source']] ?? esc($p['source']) ?></td>
+                    <td>
+                        <?php if ($p['source'] === 'google_maps'): ?>
+                        <span class="badge text-bg-light border text-dark" style="font-size:.75rem">
+                            <i class="bi bi-geo-alt me-1"></i>Google Maps
+                        </span>
+                        <?php else: ?>
+                        <?= $sourceLabel[$p['source']] ?? esc($p['source']) ?>
+                        <?php endif ?>
+                    </td>
                     <td>
                         <select class="form-select form-select-sm status-select"
                                 data-id="<?= $p['id'] ?>"

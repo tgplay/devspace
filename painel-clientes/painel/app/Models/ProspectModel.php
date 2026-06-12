@@ -13,6 +13,7 @@ class ProspectModel extends Model
     protected $allowedFields = [
         'name', 'email', 'phone', 'company',
         'interest', 'source', 'status', 'notes',
+        'rating', 'reviews_count', 'maps_url',
     ];
 
     protected $useTimestamps = true;

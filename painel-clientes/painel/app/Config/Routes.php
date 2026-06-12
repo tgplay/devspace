@@ -54,6 +54,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('contract-templates/(:num)/content','Admin\ContractTemplates::content/$1');
 
     $routes->get('prospects',                       'Admin\Prospects::index');
+    $routes->get('prospects/import',                'Admin\Prospects::importForm');
+    $routes->post('prospects/import',               'Admin\Prospects::importProcess');
     $routes->get('prospects/new',                   'Admin\Prospects::create');
     $routes->post('prospects',                      'Admin\Prospects::store');
     $routes->get('prospects/(:num)',                'Admin\Prospects::show/$1');
