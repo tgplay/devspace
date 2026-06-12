@@ -30,6 +30,9 @@ $total = array_sum($statusCounts);
         <a href="/admin/prospects/import" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-upload me-1"></i> Importar CSV
         </a>
+        <a href="/admin/prospects/queue" class="btn btn-success btn-sm">
+            <i class="bi bi-play-fill me-1"></i> Iniciar fila
+        </a>
         <a href="/admin/prospects/new" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i> Novo prospecto
         </a>

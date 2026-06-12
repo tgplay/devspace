@@ -142,6 +142,59 @@ class Prospects extends Controller
             ->with('temp_password', $tempPassword);
     }
 
+    public function queue(): string
+    {
+        $skipped = session()->get('queue_skipped') ?? [];
+        $model   = new ProspectModel();
+
+        $query = $model->where('status', 'new')
+                       ->orderBy('reviews_count', 'DESC')
+                       ->orderBy('created_at', 'ASC');
+
+        if (! empty($skipped)) {
+            $query->whereNotIn('id', $skipped);
+        }
+
+        $prospect  = $query->first();
+        $total     = (new ProspectModel())->where('status', 'new')->countAllResults();
+
+        return view('admin/prospects/queue', [
+            'prospect' => $prospect,
+            'total'    => $total,
+            'skipped'  => count($skipped),
+        ]);
+    }
+
+    public function queueAction(int $id)
+    {
+        $action = $this->request->getPost('action');
+
+        if ($action === 'contacted') {
+            (new ProspectModel())->update($id, ['status' => 'contacted']);
+            $skipped = array_values(array_filter(
+                session()->get('queue_skipped') ?? [],
+                fn($s) => (int) $s !== $id
+            ));
+            session()->set('queue_skipped', $skipped);
+
+        } elseif ($action === 'disqualify') {
+            (new ProspectModel())->update($id, ['status' => 'lost']);
+
+        } elseif ($action === 'skip') {
+            $skipped   = session()->get('queue_skipped') ?? [];
+            $skipped[] = $id;
+            session()->set('queue_skipped', array_unique($skipped));
+        }
+
+        return redirect()->to('/admin/prospects/queue');
+    }
+
+    public function queueClearSkips()
+    {
+        session()->remove('queue_skipped');
+        return redirect()->to('/admin/prospects/queue');
+    }
+
     public function importForm(): string
     {
         return view('admin/prospects/import');

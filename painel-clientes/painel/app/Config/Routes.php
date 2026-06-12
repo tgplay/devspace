@@ -54,6 +54,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('contract-templates/(:num)/content','Admin\ContractTemplates::content/$1');
 
     $routes->get('prospects',                       'Admin\Prospects::index');
+    $routes->get('prospects/queue',                 'Admin\Prospects::queue');
+    $routes->post('prospects/queue/clear',          'Admin\Prospects::queueClearSkips');
     $routes->get('prospects/import',                'Admin\Prospects::importForm');
     $routes->post('prospects/import',               'Admin\Prospects::importProcess');
     $routes->get('prospects/new',                   'Admin\Prospects::create');
@@ -61,6 +63,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('prospects/(:num)',                'Admin\Prospects::show/$1');
     $routes->post('prospects/(:num)',               'Admin\Prospects::update/$1');
     $routes->post('prospects/(:num)/status',        'Admin\Prospects::updateStatus/$1');
+    $routes->post('prospects/(:num)/queue-action',  'Admin\Prospects::queueAction/$1');
     $routes->post('prospects/(:num)/delete',        'Admin\Prospects::delete/$1');
     $routes->post('prospects/(:num)/convert',       'Admin\Prospects::convertToClient/$1');
 });

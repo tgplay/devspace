@@ -33,8 +33,11 @@
                 <i class="bi bi-folder me-2"></i> Projetos
             </a>
             <div class="nav-label">Vendas</div>
-            <a href="/admin/prospects" class="<?= str_starts_with(uri_string(), 'admin/prospects') ? 'active' : '' ?>">
+            <a href="/admin/prospects" class="<?= str_starts_with(uri_string(), 'admin/prospects') && uri_string() !== 'admin/prospects/queue' ? 'active' : '' ?>">
                 <i class="bi bi-person-plus me-2"></i> Prospectos
+            </a>
+            <a href="/admin/prospects/queue" class="<?= uri_string() === 'admin/prospects/queue' ? 'active' : '' ?>">
+                <i class="bi bi-play-circle me-2"></i> Fila de abordagem
             </a>
             <a href="/admin/contracts" class="<?= str_starts_with(uri_string(), 'admin/contracts') ? 'active' : '' ?>">
                 <i class="bi bi-file-earmark-text me-2"></i> Contratos
