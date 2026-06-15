@@ -7,6 +7,7 @@ Pré-requisitos:
     pip install requests psycopg2-binary
 """
 
+import os
 import time
 import logging
 import requests
@@ -16,7 +17,9 @@ import psycopg2
 # CONFIGURAÇÃO — preencha antes de rodar
 # =============================================================================
 
-GOOGLE_API_KEY = 'SUA_API_KEY_AQUI'
+# Windows PowerShell: $env:GOOGLE_API_KEY = 'sua_chave'
+# Linux/Mac:          export GOOGLE_API_KEY='sua_chave'
+GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
 
 DB_CONFIG = dict(
     host     = 'localhost',
@@ -75,6 +78,8 @@ def text_search(query: str) -> list:
 
     while True:
         resp = requests.get(url, params=params, timeout=10).json()
+        if resp.get('status') != 'OK' and not results:
+            log.warning(f'  API status: {resp.get("status")} — {resp.get("error_message", "")}')
         results.extend(resp.get('results', []))
 
         token = resp.get('next_page_token')
