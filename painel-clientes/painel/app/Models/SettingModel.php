@@ -6,11 +6,12 @@ use CodeIgniter\Model;
 
 class SettingModel extends Model
 {
-    protected $table         = 'settings';
-    protected $primaryKey    = 'key';
-    protected $returnType    = 'array';
-    protected $allowedFields = ['key', 'value'];
-    protected $useTimestamps = false;
+    protected $table            = 'settings';
+    protected $primaryKey       = 'key';
+    protected $useAutoIncrement = false;
+    protected $returnType       = 'array';
+    protected $allowedFields    = ['key', 'value'];
+    protected $useTimestamps    = false;
 
     public function get(string $key, $default = null)
     {
