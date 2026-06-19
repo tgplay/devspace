@@ -18,7 +18,7 @@ class SettingModel extends Model
         return $row ? $row['value'] : $default;
     }
 
-    public function set(string $key, $value): void
+    public function put(string $key, $value): void
     {
         if ($this->find($key)) {
             $this->update($key, ['value' => $value]);

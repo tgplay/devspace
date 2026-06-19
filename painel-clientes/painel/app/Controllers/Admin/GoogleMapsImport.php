@@ -28,10 +28,10 @@ class GoogleMapsImport extends Controller
 
     public function save()
     {
-        $this->settings->set('gmaps_api_key',     $this->request->getPost('api_key'));
-        $this->settings->set('gmaps_min_rating',  $this->request->getPost('min_rating'));
-        $this->settings->set('gmaps_min_reviews', $this->request->getPost('min_reviews'));
-        $this->settings->set('gmaps_searches',    trim($this->request->getPost('searches')));
+        $this->settings->put('gmaps_api_key',     $this->request->getPost('api_key'));
+        $this->settings->put('gmaps_min_rating',  $this->request->getPost('min_rating'));
+        $this->settings->put('gmaps_min_reviews', $this->request->getPost('min_reviews'));
+        $this->settings->put('gmaps_searches',    trim($this->request->getPost('searches')));
 
         return redirect()->to('/admin/google-maps-import')->with('success', 'Configurações salvas.');
     }
