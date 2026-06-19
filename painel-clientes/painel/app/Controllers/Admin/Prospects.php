@@ -12,18 +12,30 @@ class Prospects extends Controller
 
     public function index(): string
     {
-        $model  = new ProspectModel();
-        $filter = $this->request->getGet('status') ?? 'all';
-
-        $query = $model->orderBy('created_at', 'DESC');
-        if ($filter !== 'all') {
-            $query->where('status', $filter);
+        $filter  = $this->request->getGet('status') ?? 'all';
+        $perPage = (int) ($this->request->getGet('per_page') ?? session()->get('prospects_per_page') ?? 25);
+        if (! in_array($perPage, [10, 25, 50, 100, 200], true)) {
+            $perPage = 25;
+        }
+        if ($this->request->getGet('per_page')) {
+            session()->set('prospects_per_page', $perPage);
         }
 
+        $statusCounts = (new ProspectModel())->countByStatus();
+
+        $model = new ProspectModel();
+        if ($filter !== 'all') {
+            $model->where('status', $filter);
+        }
+        $prospects = $model->orderBy('created_at', 'DESC')->paginate($perPage);
+        $pager     = $model->pager;
+
         return view('admin/prospects/index', [
-            'prospects'    => $query->findAll(),
-            'statusCounts' => $model->countByStatus(),
+            'prospects'    => $prospects,
+            'statusCounts' => $statusCounts,
             'activeFilter' => $filter,
+            'pager'        => $pager,
+            'perPage'      => $perPage,
         ]);
     }
 

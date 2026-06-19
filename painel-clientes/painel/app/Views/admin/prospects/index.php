@@ -55,18 +55,31 @@ $total = array_sum($statusCounts);
     <?php endforeach ?>
 </div>
 
-<!-- Filtros de status -->
-<div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-    <a href="/admin/prospects"
-       class="btn btn-sm <?= $activeFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary' ?>">
-        Todos (<?= $total ?>)
-    </a>
-    <?php foreach ($statusLabel as $key => $label): ?>
-    <a href="/admin/prospects?status=<?= $key ?>"
-       class="btn btn-sm <?= $activeFilter === $key ? 'btn-'.$statusBadge[$key] : 'btn-outline-'.$statusBadge[$key] ?>">
-        <?= $label ?>
-    </a>
-    <?php endforeach ?>
+<!-- Filtros de status + per page -->
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+    <div class="d-flex flex-wrap gap-2">
+        <?php $ppParam = $perPage !== 25 ? '&per_page='.$perPage : '' ?>
+        <a href="/admin/prospects<?= $ppParam ? '?'.ltrim($ppParam,'&') : '' ?>"
+           class="btn btn-sm <?= $activeFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary' ?>">
+            Todos (<?= $total ?>)
+        </a>
+        <?php foreach ($statusLabel as $key => $label): ?>
+        <a href="/admin/prospects?status=<?= $key ?><?= $ppParam ?>"
+           class="btn btn-sm <?= $activeFilter === $key ? 'btn-'.$statusBadge[$key] : 'btn-outline-'.$statusBadge[$key] ?>">
+            <?= $label ?>
+        </a>
+        <?php endforeach ?>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+        <span class="text-muted small me-1">Exibir:</span>
+        <?php foreach ([10, 25, 50, 100, 200] as $n): ?>
+        <?php $statusParam = $activeFilter !== 'all' ? 'status='.$activeFilter.'&' : '' ?>
+        <a href="/admin/prospects?<?= $statusParam ?>per_page=<?= $n ?>"
+           class="btn btn-sm <?= $perPage === $n ? 'btn-secondary' : 'btn-outline-secondary' ?>">
+            <?= $n ?>
+        </a>
+        <?php endforeach ?>
+    </div>
 </div>
 
 <!-- Tabela -->
@@ -156,6 +169,16 @@ $total = array_sum($statusCounts);
         </table>
     </div>
 </div>
+
+<!-- Paginação -->
+<?php if ($pager && $pager->getPageCount('default') > 1): ?>
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted small">
+        Página <?= $pager->getCurrentPage('default') ?> de <?= $pager->getPageCount('default') ?>
+    </div>
+    <?= $pager->links() ?>
+</div>
+<?php endif ?>
 
 <!-- Toast -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">

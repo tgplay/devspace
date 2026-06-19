@@ -200,3 +200,9 @@ CREATE INDEX idx_prospects_status   ON prospects(status);
 CREATE INDEX idx_prospects_created  ON prospects(created_at);
 CREATE INDEX idx_contracts_client   ON contracts(client_id);
 CREATE INDEX idx_contracts_status   ON contracts(status);
+
+-- Configurações chave-valor do painel
+CREATE TABLE IF NOT EXISTS settings (
+    key   VARCHAR(100) PRIMARY KEY,
+    value TEXT
+);
