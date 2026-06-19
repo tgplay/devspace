@@ -2,9 +2,10 @@
 <?= $this->section('content') ?>
 
 <style>
-    .wiki-toc a { color: #adb5bd; text-decoration: none; display: block; padding: 4px 0; font-size: .875rem; }
-    .wiki-toc a:hover, .wiki-toc a.active { color: #fff; }
-    .wiki-toc .toc-section { color: #6c757d; font-size: .7rem; text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 4px; }
+    .wiki-toc a { color: #6c757d; text-decoration: none; display: block; padding: 4px 0; font-size: .875rem; }
+    .wiki-toc a:hover { color: #212529; }
+    .wiki-toc a.active { color: #0d6efd; font-weight: 600; }
+    .wiki-toc .toc-section { color: #adb5bd; font-size: .7rem; text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 4px; }
     .wiki-section { scroll-margin-top: 80px; }
     .wiki-step { background: #f8f9fa; border-left: 3px solid #0d6efd; padding: .75rem 1rem; border-radius: 0 .375rem .375rem 0; margin-bottom: .5rem; }
     .wiki-tip  { background: #fff3cd; border-left: 3px solid #ffc107; padding: .75rem 1rem; border-radius: 0 .375rem .375rem 0; }
@@ -29,6 +30,7 @@
             <a href="#captacao">Captação Maps</a>
             <a href="#prospectos">Prospectos</a>
             <a href="#fila">Fila de abordagem</a>
+            <a href="#diagnostico">Como demonstrar o diagnóstico</a>
             <div class="toc-section">Comercial</div>
             <a href="#modelos">Modelos de contrato</a>
             <a href="#contratos">Contratos</a>
@@ -232,6 +234,37 @@
 
             <div class="wiki-tip mt-3">
                 <strong>Ritmo ideal:</strong> 10 a 20 leads por dia, entre 9h e 11h (fora do horário de movimento dos restaurantes).
+            </div>
+        </section>
+
+        <!-- ── Diagnóstico ──────────────────────────────────────── -->
+        <section class="wiki-section mb-5" id="diagnostico">
+            <h5 class="border-bottom pb-2 mb-3"><i class="bi bi-search me-2 text-primary"></i>Como demonstrar o diagnóstico</h5>
+            <p>Quando o prospect perguntar <em>"como você pode me mostrar que estou perdendo clientes?"</em>, você faz o diagnóstico em 2 minutos via WhatsApp com 3 prints.</p>
+
+            <h6 class="mt-3">Print 1 — Volume de buscas pelo nome ou categoria</h6>
+            <div class="wiki-step">1. Acesse <strong>Google Keyword Planner</strong> (ads.google.com → Ferramentas → Planejador de palavras-chave) ou <strong>Ubersuggest</strong> (neilpatel.com/ubersuggest) — ambos gratuitos</div>
+            <div class="wiki-step">2. Pesquise termos relacionados ao negócio: ex. <em>"buffet infantil Pirituba"</em>, <em>"padaria zona norte SP"</em></div>
+            <div class="wiki-step">3. Tire print mostrando o volume mensal de buscas</div>
+            <div class="wiki-step">4. Envie com a mensagem: <em>"Olha — só esse termo tem X pessoas buscando por mês em SP. Veja o que aparece nos resultados: os concorrentes com site. Vocês não aparecem."</em></div>
+
+            <h6 class="mt-3">Print 2 — Google mostrando concorrentes com site no topo</h6>
+            <div class="wiki-step">1. Pesquise no Google algo como <em>"restaurante [bairro] SP"</em> ou a categoria + cidade do prospect</div>
+            <div class="wiki-step">2. Tire print da tela mostrando concorrentes com site aparecendo nos resultados orgânicos</div>
+            <div class="wiki-step">3. Mostre que o prospect <strong>não aparece</strong> nos resultados — ou aparece só no Maps, sem link de site</div>
+            <div class="wiki-step">4. Envie com a mensagem: <em>"Pesquisei agora. Concorrentes de vocês estão aqui em cima com site. Vocês têm o Maps, mas quem pesquisa no Google muitas vezes nem chega até o Maps."</em></div>
+
+            <h6 class="mt-3">Print 3 — Perfil no Google Maps sem site</h6>
+            <div class="wiki-step">1. Abra o Google Maps e busque o negócio do prospect</div>
+            <div class="wiki-step">2. Mostre que o perfil está <strong>sem o botão "Site"</strong> — negócios com site têm esse botão em destaque no Maps</div>
+            <div class="wiki-step">3. Envie com a mensagem: <em>"Olha o perfil de vocês — sem o botão de site. Cada pessoa que visita esse perfil e não clica em nada é um cliente que foi embora."</em></div>
+
+            <div class="wiki-tip mt-3">
+                <strong>Resultado esperado:</strong> três imagens no WhatsApp, menos de 2 minutos de trabalho. O prospect vê com os próprios olhos — sem precisar confiar apenas na sua palavra.
+            </div>
+
+            <div class="wiki-warn mt-2">
+                <strong>Importante:</strong> não mande os três prints de uma vez. Mande o primeiro, espere a reação, depois o segundo. Conversa flui melhor do que uma rajada de imagens.
             </div>
         </section>
 

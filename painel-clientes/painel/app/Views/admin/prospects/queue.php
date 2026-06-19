@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/admin') ?>
+﻿<?= $this->extend('layouts/admin') ?>
 <?= $this->section('content') ?>
 
 <?php
@@ -28,6 +28,10 @@ $pending = $total - $skipped;
         </span>
     </div>
 </div>
+
+<?php
+$adminName = trim(session()->get('user_name') ?? 'Eu');
+?>
 
 <?php if (! $prospect): ?>
 
@@ -60,22 +64,24 @@ $pRating  = $prospect['rating']        ? number_format((float)$prospect['rating'
 $pReviews = $prospect['reviews_count'] ? number_format((int)$prospect['reviews_count'])         : null;
 $waPhone  = preg_replace('/\D/', '', $prospect['phone'] ?? '');
 
-$msgParts = [];
 if ($pReviews && $pRating) {
-    $msgParts[] = "tem {$pReviews} avaliações no Google com {$pRating} estrelas — parabéns!";
+    $googleLine = "tem nota {$pRating} {{STAR}} e {$pReviews} avaliações no Google — parabéns!";
 } elseif ($pRating) {
-    $msgParts[] = "tem {$pRating} estrelas no Google — parabéns!";
+    $googleLine = "tem nota {$pRating} {{STAR}} no Google — parabéns!";
 } elseif ($pReviews) {
-    $msgParts[] = "tem {$pReviews} avaliações no Google — parabéns!";
+    $googleLine = "tem {$pReviews} avaliações no Google — parabéns!";
 } else {
-    $msgParts[] = "tem uma ótima presença no Google!";
+    $googleLine = "tem uma ótima presença no Google!";
 }
 
-$waMsg  = "Olá! Vi que o {$pName} {$msgParts[0]} ";
-$waMsg .= "Percebi que vocês ainda não têm um site. Isso pode estar fazendo vocês perderem clientes que pesquisam no Google antes de decidir onde ir. ";
-$waMsg .= "Posso mostrar exatamente quantas pessoas pesquisam por vocês e não te encontram? Faço um diagnóstico rápido, sem compromisso.";
+// Placeholders substituídos pelo JS: {{SAUDACAO}}, {{STAR}}, {{SMILE}}
+$waMsg  = "Oi, {{SAUDACAO}}! Sou {$adminName}.\n\n";
+$waMsg .= "Vi que o {$pName} {$googleLine}\n\n";
+$waMsg .= "Percebi que vocês ainda não têm site próprio. Isso pode estar fazendo vocês perderem clientes que pesquisam no Google antes de decidir onde ir.\n\n";
+$waMsg .= "Posso te mostrar quantas pessoas buscam por vocês e não te encontram? Diagnóstico rápido, sem compromisso. {{SMILE}}";
 
-$waLink = $waPhone ? 'https://wa.me/55' . $waPhone . '?text=' . rawurlencode($waMsg) : null;
+// Link gerado sem o placeholder — JS vai sobrescrever o href depois de montar a mensagem final
+$waLink = $waPhone ? '#wa-open' : null;
 ?>
 
 <div class="row justify-content-center">
@@ -129,7 +135,7 @@ $waLink = $waPhone ? 'https://wa.me/55' . $waPhone . '?text=' . rawurlencode($wa
                     </label>
                     <div class="position-relative">
                         <textarea id="wa-message" class="form-control"
-                                  rows="5" readonly style="font-size:.9rem; padding-right:5rem;"><?= esc($waMsg) ?></textarea>
+                                  rows="5" readonly style="font-size:.9rem; padding-right:5rem; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;"><?= esc($waMsg) ?></textarea>
                         <button type="button" onclick="copyMsg()"
                                 class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2"
                                 id="copy-btn">
@@ -142,12 +148,31 @@ $waLink = $waPhone ? 'https://wa.me/55' . $waPhone . '?text=' . rawurlencode($wa
                 <div class="row g-2">
 
                     <!-- WhatsApp -->
-                    <?php if ($waLink): ?>
+                    <?php if ($waPhone): ?>
                     <div class="col-12 col-sm-auto">
-                        <a href="<?= $waLink ?>" target="_blank" rel="noopener"
+                        <a href="#" id="wa-btn" target="_blank" rel="noopener"
+                           data-phone="55<?= esc($waPhone) ?>"
                            class="btn btn-success w-100" style="min-width:180px">
                             <i class="bi bi-whatsapp me-2"></i>Abrir WhatsApp
                         </a>
+                    </div>
+                    <!-- Ligar -->
+                    <div class="col-12 col-sm-auto">
+                        <a href="tel:+55<?= esc($waPhone) ?>"
+                           class="btn btn-outline-success w-100">
+                            <i class="bi bi-telephone me-1"></i>Ligar
+                        </a>
+                    </div>
+                    <!-- Sem WhatsApp -->
+                    <div class="col-12 col-sm-auto">
+                        <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/queue-action">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="action" value="no_whatsapp">
+                            <button type="submit" class="btn btn-outline-warning w-100"
+                                    title="Registra que o número não tem WhatsApp e avança a fila">
+                                <i class="bi bi-whatsapp me-1"></i>Sem WhatsApp
+                            </button>
+                        </form>
                     </div>
                     <?php endif ?>
 
@@ -201,6 +226,26 @@ $waLink = $waPhone ? 'https://wa.me/55' . $waPhone . '?text=' . rawurlencode($wa
 </div>
 
 <script>
+(function () {
+    const hour = new Date().getHours();
+    const saudacao = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite';
+
+    const emojiStar  = String.fromCodePoint(0x2B50);
+    const emojiSmile = String.fromCodePoint(0x1F642);
+
+    const textarea = document.getElementById('wa-message');
+    textarea.value = textarea.value
+        .replace('{{SAUDACAO}}', saudacao)
+        .replace(/\{\{STAR\}\}/g,  emojiStar)
+        .replace(/\{\{SMILE\}\}/g, emojiSmile);
+
+    const waBtn = document.getElementById('wa-btn');
+    if (waBtn) {
+        const phone = waBtn.dataset.phone;
+        waBtn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(textarea.value);
+    }
+})();
+
 function copyMsg() {
     navigator.clipboard.writeText(document.getElementById('wa-message').value).then(function () {
         const lbl = document.getElementById('copy-lbl');
@@ -209,14 +254,12 @@ function copyMsg() {
     });
 }
 
-// Atalhos de teclado
 document.addEventListener('keydown', function (e) {
     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
     const key = e.key.toLowerCase();
     if (key === 'w') {
-        <?php if ($waLink): ?>
-        window.open(<?= json_encode($waLink) ?>, '_blank');
-        <?php endif ?>
+        const waBtn = document.getElementById('wa-btn');
+        if (waBtn) window.open(waBtn.href, '_blank');
     } else if (key === 'c') {
         document.querySelector('form [value="contacted"]').closest('form').submit();
     } else if (key === 'p') {

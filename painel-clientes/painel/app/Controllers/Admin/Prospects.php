@@ -181,13 +181,25 @@ class Prospects extends Controller
     {
         $action = $this->request->getPost('action');
 
-        if ($action === 'contacted') {
-            (new ProspectModel())->update($id, ['status' => 'contacted']);
+        $removeFromSkipped = function (int $id): void {
             $skipped = array_values(array_filter(
                 session()->get('queue_skipped') ?? [],
                 fn($s) => (int) $s !== $id
             ));
             session()->set('queue_skipped', $skipped);
+        };
+
+        if ($action === 'contacted') {
+            (new ProspectModel())->update($id, ['status' => 'contacted']);
+            $removeFromSkipped($id);
+
+        } elseif ($action === 'no_whatsapp') {
+            $model   = new ProspectModel();
+            $current = $model->find($id);
+            $note    = '[Sem WhatsApp — contato via WA não disponível]';
+            $notes   = trim(($current['notes'] ?? '') . "\n" . $note);
+            $model->update($id, ['status' => 'contacted', 'notes' => $notes]);
+            $removeFromSkipped($id);
 
         } elseif ($action === 'disqualify') {
             (new ProspectModel())->update($id, ['status' => 'lost']);
