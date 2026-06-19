@@ -52,8 +52,17 @@
             <a href="/admin/support" class="<?= str_starts_with(uri_string(), 'admin/support') ? 'active' : '' ?>">
                 <i class="bi bi-headset me-2"></i> Chamados
             </a>
+            <?php if (session()->get('user_role') === 'admin'): ?>
+            <div class="nav-label">Configurações</div>
+            <a href="/admin/team" class="<?= str_starts_with(uri_string(), 'admin/team') ? 'active' : '' ?>">
+                <i class="bi bi-people-fill me-2"></i> Equipe
+            </a>
+            <?php endif ?>
         </nav>
         <div class="p-3 border-top border-secondary">
+            <a href="/admin/profile" class="<?= str_starts_with(uri_string(), 'admin/profile') ? 'active' : '' ?>" style="color:#adb5bd;text-decoration:none;display:block;padding:6px 0;font-size:.85rem">
+                <i class="bi bi-person-circle me-2"></i> <?= esc(session()->get('user_name')) ?>
+            </a>
             <a href="/admin/wiki" class="<?= str_starts_with(uri_string(), 'admin/wiki') ? 'active' : '' ?>" style="color:#adb5bd;text-decoration:none;display:block;padding:6px 0;font-size:.85rem">
                 <i class="bi bi-book me-2"></i> Manual
             </a>

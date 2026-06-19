@@ -18,6 +18,6 @@ class UserModel extends Model
 
     protected $validationRules = [
         'email' => 'required|valid_email',
-        'role'  => 'required|in_list[admin,client]',
+        'role'  => 'required|in_list[admin,client,agent]',
     ];
 }

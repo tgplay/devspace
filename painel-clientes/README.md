@@ -254,16 +254,26 @@ Implementado em `inc/cookie-banner.php`, injetado via `wp_footer`. Exibe faixa e
 
 ### Controle de acesso
 
-- Rotas `/admin/*` → `AdminFilter` — exige login **e** perfil `admin`
+- Rotas `/admin/*` → `AdminFilter` — exige login e perfil `admin` ou `agent`
 - Rotas `/app/*` → `AuthFilter` — exige login (qualquer perfil)
 - O admin pode entrar no painel de qualquer cliente via **"Entrar como cliente"**
 - CSRF desabilitado globalmente em `Filters.php` para permitir o endpoint público `/api/contact/ticket`
+
+**Níveis de acesso internos:**
+
+| Role | Acesso |
+|---|---|
+| `admin` | Acesso total ao painel |
+| `agent` | Somente prospectos, fila de abordagem, captação Maps, wiki e perfil próprio |
+| `client` | Somente área do cliente (`/app/*`) |
+
+Gerenciar equipe (criar/editar/remover admins e agentes) em `/admin/team`.
 
 ### Banco de dados (PostgreSQL)
 
 | Tabela | O que armazena |
 |---|---|
-| `users` | Admins e clientes (`role`: `admin` ou `client`) |
+| `users` | Admins, agentes e clientes (`role`: `admin`, `agent` ou `client`) |
 | `projects` | Projetos vinculados a clientes |
 | `project_tasks` | Etapas com aprovação pelo cliente |
 | `tickets` | Chamados de suporte |
@@ -274,8 +284,17 @@ Implementado em `inc/cookie-banner.php`, injetado via `wp_footer`. Exibe faixa e
 | `prospects` | Pipeline de vendas (leads e prospectos) |
 | `contract_templates` | Modelos reutilizáveis de contrato |
 | `contracts` | Contratos emitidos para clientes com aceite digital |
+| `settings` | Configurações chave-valor do painel (ex: API key do Google Maps) |
 
 Criado automaticamente na primeira subida via `db/init.sql`.
+
+Migrations avulsas (aplicar em DB já existente):
+```powershell
+# Adiciona role 'agent'
+Get-Content db\migrate_agent_role.sql | docker compose exec -T db psql -U painel_user -d painel_clientes
+# Cria tabela settings
+Get-Content db\migrate_settings.sql | docker compose exec -T db psql -U painel_user -d painel_clientes
+```
 
 ### Pipeline de Vendas (Prospectos)
 

@@ -55,6 +55,16 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
 
     $routes->get('wiki',                             'Admin\Wiki::index');
 
+    $routes->get('profile',                          'Admin\Profile::index');
+    $routes->post('profile/update',                  'Admin\Profile::update');
+
+    $routes->get('team',                             'Admin\Team::index');
+    $routes->get('team/new',                         'Admin\Team::create');
+    $routes->post('team',                            'Admin\Team::store');
+    $routes->get('team/(:num)',                      'Admin\Team::show/$1');
+    $routes->post('team/(:num)/update',              'Admin\Team::update/$1');
+    $routes->post('team/(:num)/delete',              'Admin\Team::delete/$1');
+
     $routes->get('google-maps-import',               'Admin\GoogleMapsImport::index');
     $routes->post('google-maps-import/save',         'Admin\GoogleMapsImport::save');
     $routes->get('google-maps-import/run',           'Admin\GoogleMapsImport::run');

@@ -13,7 +13,7 @@ CREATE TABLE users (
     name        VARCHAR(120)        NOT NULL,
     email       VARCHAR(180)        NOT NULL UNIQUE,
     password    VARCHAR(255)        NOT NULL,
-    role        VARCHAR(20)         NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client')),
+    role        VARCHAR(20)         NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client', 'agent')),
     phone       VARCHAR(30),
     avatar_url  VARCHAR(500),
     active      BOOLEAN             NOT NULL DEFAULT TRUE,
