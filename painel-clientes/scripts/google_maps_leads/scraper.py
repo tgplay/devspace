@@ -54,6 +54,9 @@ SEARCHES = [
 
     'restaurante Jardins São Paulo',
     'restaurante Vila Olímpia São Paulo',
+
+    'buffet infantil Pirituba São Paulo',
+    'buffet festa Vila Pirituba infantil São Paulo', 
 ]
 
 # =============================================================================

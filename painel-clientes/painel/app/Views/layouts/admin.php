@@ -54,7 +54,10 @@
             </a>
         </nav>
         <div class="p-3 border-top border-secondary">
-            <a href="/logout" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i> Sair</a>
+            <a href="/admin/wiki" class="<?= str_starts_with(uri_string(), 'admin/wiki') ? 'active' : '' ?>" style="color:#adb5bd;text-decoration:none;display:block;padding:6px 0;font-size:.85rem">
+                <i class="bi bi-book me-2"></i> Manual
+            </a>
+            <a href="/logout" class="text-danger mt-1" style="display:block;padding:6px 0;font-size:.85rem"><i class="bi bi-box-arrow-right me-2"></i> Sair</a>
         </div>
     </div>
     <div class="main-content">

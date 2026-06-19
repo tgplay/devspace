@@ -53,6 +53,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('contract-templates/(:num)/delete','Admin\ContractTemplates::delete/$1');
     $routes->get('contract-templates/(:num)/content','Admin\ContractTemplates::content/$1');
 
+    $routes->get('wiki',                             'Admin\Wiki::index');
+
     $routes->get('google-maps-import',               'Admin\GoogleMapsImport::index');
     $routes->post('google-maps-import/save',         'Admin\GoogleMapsImport::save');
     $routes->get('google-maps-import/run',           'Admin\GoogleMapsImport::run');

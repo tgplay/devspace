@@ -5,36 +5,36 @@
 
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-lg-3">
-        <div class="card text-bg-primary">
+        <a href="/admin/clients" class="card text-bg-primary text-decoration-none h-100">
             <div class="card-body">
                 <div class="fs-2 fw-bold"><?= $total_clients ?></div>
                 <div class="small">Clientes</div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg-3">
-        <div class="card text-bg-success">
+        <a href="/admin/projects" class="card text-bg-success text-decoration-none h-100">
             <div class="card-body">
                 <div class="fs-2 fw-bold"><?= $total_projects ?></div>
                 <div class="small">Projetos</div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg-3">
-        <div class="card text-bg-warning">
+        <a href="/admin/support" class="card text-bg-warning text-decoration-none h-100">
             <div class="card-body">
                 <div class="fs-2 fw-bold"><?= $open_tickets ?></div>
                 <div class="small">Chamados abertos</div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-sm-6 col-lg-3">
-        <div class="card text-bg-danger">
+        <a href="/admin/prospects?status=new" class="card text-bg-danger text-decoration-none h-100">
             <div class="card-body">
-                <div class="fs-2 fw-bold"><?= $pending_invoices ?></div>
-                <div class="small">Faturas pendentes</div>
+                <div class="fs-2 fw-bold"><?= $new_prospects ?></div>
+                <div class="small">Prospectos novos</div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
