@@ -30,6 +30,18 @@ add_action('wp_enqueue_scripts', function () {
 });
 
 /* ──────────────────────────────────────────────
+   Permite SVG inline em conteúdo de posts/páginas
+────────────────────────────────────────────── */
+add_filter('wp_kses_allowed_html', function (array $tags, string $context): array {
+    if ($context !== 'post') return $tags;
+    $tags['svg']  = ['class' => true, 'viewbox' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'width' => true, 'height' => true, 'aria-hidden' => true];
+    $tags['rect'] = ['x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true];
+    $tags['path'] = ['d' => true, 'fill' => true, 'stroke' => true];
+    $tags['circle'] = ['cx' => true, 'cy' => true, 'r' => true];
+    return $tags;
+}, 10, 2);
+
+/* ──────────────────────────────────────────────
    Title tag: formato "Página | devspace"
 ────────────────────────────────────────────── */
 add_filter('document_title_parts', function (array $parts): array {
