@@ -25,9 +25,24 @@ wp-content/languages/
 # MU-plugins — versiona apenas o timing probe
 wp-content/mu-plugins/
 
-# Arquivos de sistema
+# Temas de terceiros adicionais
+wp-content/themes/astra-child/
+wp-content/themes/micro-themes/
+wp-content/micro-themes/
+
+# Cache e backups automáticos do WordPress
+wp-content/upgrade-temp-backup/
+wp-content/w3tc-config/
+
+# Arquivos de sistema e scripts utilitários
 .DS_Store
 Thumbs.db
 *.log
 rename-tables.php
 opcache-preload.php
+wpress-db-import.php
+wpress-extract.php
+wpress-inspect.php
+wp-content/index.php
+wp-content/themes/index.php
+wp-content/package.json
