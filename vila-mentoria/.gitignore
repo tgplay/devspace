@@ -1,0 +1,33 @@
+# WordPress — ignora tudo exceto o que foi customizado
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/backups/
+wp-content/cache/
+wp-content/ai1wm-backups/
+wp-content/fonts/
+wp-content/debug.log
+wp-content/advanced-cache.php
+
+# Plugins — não versionar plugins de terceiros
+wp-content/plugins/
+!wp-content/plugins/index.php
+
+# Temas — versiona apenas nosso tema filho (kava-child)
+# Ignora temas de terceiros individualmente (não o diretório pai,
+# pois a negação não funciona quando o pai está ignorado)
+wp-content/themes/kava/
+wp-content/themes/twentytwenty*/
+wp-content/themes/astra/
+
+# Languages — arquivos de tradução gerados automaticamente
+wp-content/languages/
+
+# MU-plugins — versiona apenas o timing probe
+wp-content/mu-plugins/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+*.log
+rename-tables.php
+opcache-preload.php
