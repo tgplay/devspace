@@ -69,9 +69,13 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('google-maps-import/save',         'Admin\GoogleMapsImport::save');
     $routes->get('google-maps-import/run',           'Admin\GoogleMapsImport::run');
 
+    $routes->get('ai-settings',                      'Admin\AiSettings::index');
+    $routes->post('ai-settings/save',                'Admin\AiSettings::save');
+
     $routes->get('prospects',                       'Admin\Prospects::index');
     $routes->get('prospects/queue',                 'Admin\Prospects::queue');
     $routes->post('prospects/queue/clear',          'Admin\Prospects::queueClearSkips');
+    $routes->post('prospects/(:num)/generate-message', 'Admin\Prospects::generateMessage/$1');
     $routes->get('prospects/import',                'Admin\Prospects::importForm');
     $routes->post('prospects/import',               'Admin\Prospects::importProcess');
     $routes->get('prospects/new',                   'Admin\Prospects::create');
