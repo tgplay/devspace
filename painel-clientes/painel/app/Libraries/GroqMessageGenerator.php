@@ -67,7 +67,7 @@ Escreva uma mensagem de WhatsApp curta (3 a 4 linhas) para o primeiro contato co
 - Mencionar algo específico sobre o negócio (nome, nota ou avaliações no Google) quando disponível, sem exagerar em elogios.
 - Ter um tom leve e consultivo, sem pressão de venda ("hard sell").
 - Terminar com uma pergunta simples de baixo compromisso (ex: se pode mostrar algo rápido, sem obrigação).
-- Não incluir emojis em excesso (no máximo 1).
+- Não incluir NENHUM emoji (o link de abrir o WhatsApp corrompe alguns emojis no pré-preenchimento).
 - Revise mentalmente a frase antes de responder, sem repetir palavras por engano (ex: "vi vi", "que que").
 - Responda APENAS com o texto da mensagem, sem aspas, sem explicações, sem markdown.
 PROMPT;

@@ -65,20 +65,22 @@ $pReviews = $prospect['reviews_count'] ? number_format((int)$prospect['reviews_c
 $waPhone  = preg_replace('/\D/', '', $prospect['phone'] ?? '');
 
 if ($pReviews && $pRating) {
-    $googleLine = "tem nota {$pRating} {{STAR}} e {$pReviews} avaliações no Google — parabéns!";
+    $googleLine = "tem nota {$pRating} e {$pReviews} avaliações no Google — parabéns!";
 } elseif ($pRating) {
-    $googleLine = "tem nota {$pRating} {{STAR}} no Google — parabéns!";
+    $googleLine = "tem nota {$pRating} no Google — parabéns!";
 } elseif ($pReviews) {
     $googleLine = "tem {$pReviews} avaliações no Google — parabéns!";
 } else {
     $googleLine = "tem uma ótima presença no Google!";
 }
 
-// Placeholders substituídos pelo JS: {{SAUDACAO}}, {{STAR}}, {{SMILE}}
+// Placeholder substituído pelo JS: {{SAUDACAO}}
+// Sem emojis de propósito: o link wa.me (?text=...) corrompe alguns emojis
+// no pré-preenchimento do WhatsApp Web — copiar/colar funciona, o link não.
 $waMsg  = "Oi, {{SAUDACAO}}! Sou {$adminName}.\n\n";
 $waMsg .= "Vi que o {$pName} {$googleLine}\n\n";
 $waMsg .= "Percebi que vocês ainda não têm site próprio. Isso pode estar fazendo vocês perderem clientes que pesquisam no Google antes de decidir onde ir.\n\n";
-$waMsg .= "Posso te mostrar quantas pessoas buscam por vocês e não te encontram? Diagnóstico rápido, sem compromisso. {{SMILE}}";
+$waMsg .= "Posso te mostrar quantas pessoas buscam por vocês e não te encontram? Diagnóstico rápido, sem compromisso.";
 
 // Link gerado sem o placeholder — JS vai sobrescrever o href depois de montar a mensagem final
 $waLink = $waPhone ? '#wa-open' : null;
@@ -246,15 +248,8 @@ function updateWaLink() {
 }
 
 (function () {
-    const emojiStar  = String.fromCodePoint(0x2B50);
-    const emojiSmile = String.fromCodePoint(0x1F642);
-
     const textarea = document.getElementById('wa-message');
-    textarea.value = textarea.value
-        .replace('{{SAUDACAO}}', saudacao)
-        .replace(/\{\{STAR\}\}/g,  emojiStar)
-        .replace(/\{\{SMILE\}\}/g, emojiSmile);
-
+    textarea.value = textarea.value.replace('{{SAUDACAO}}', saudacao);
     updateWaLink();
 })();
 
