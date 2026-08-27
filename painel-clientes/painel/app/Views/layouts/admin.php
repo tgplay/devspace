@@ -39,6 +39,9 @@
             <a href="/admin/prospects/queue" class="<?= uri_string() === 'admin/prospects/queue' ? 'active' : '' ?>">
                 <i class="bi bi-play-circle me-2"></i> Fila de abordagem
             </a>
+            <a href="/admin/prospects/phone-followup" class="<?= str_starts_with(uri_string(), 'admin/prospects/phone-followup') ? 'active' : '' ?>">
+                <i class="bi bi-telephone me-2"></i> Follow-up telefone
+            </a>
             <a href="/admin/google-maps-import" class="<?= str_starts_with(uri_string(), 'admin/google-maps-import') ? 'active' : '' ?>">
                 <i class="bi bi-geo-alt me-2"></i> Captação Maps
             </a>
