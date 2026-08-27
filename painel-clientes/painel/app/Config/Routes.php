@@ -73,6 +73,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('ai-settings/save',                'Admin\AiSettings::save');
 
     $routes->get('prospects',                       'Admin\Prospects::index');
+    $routes->get('prospects/archive',               'Admin\Prospects::archive');
     $routes->get('prospects/queue',                 'Admin\Prospects::queue');
     $routes->post('prospects/queue/clear',          'Admin\Prospects::queueClearSkips');
     $routes->post('prospects/(:num)/generate-message', 'Admin\Prospects::generateMessage/$1');

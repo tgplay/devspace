@@ -45,6 +45,9 @@
             <a href="/admin/prospects/whatsapp-followup" class="<?= str_starts_with(uri_string(), 'admin/prospects/whatsapp-followup') ? 'active' : '' ?>">
                 <i class="bi bi-whatsapp me-2"></i> Follow-up WhatsApp
             </a>
+            <a href="/admin/prospects/archive" class="<?= str_starts_with(uri_string(), 'admin/prospects/archive') ? 'active' : '' ?>">
+                <i class="bi bi-archive me-2"></i> Arquivo
+            </a>
             <a href="/admin/google-maps-import" class="<?= str_starts_with(uri_string(), 'admin/google-maps-import') ? 'active' : '' ?>">
                 <i class="bi bi-geo-alt me-2"></i> Captação Maps
             </a>
