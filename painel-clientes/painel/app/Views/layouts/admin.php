@@ -42,6 +42,9 @@
             <a href="/admin/google-maps-import" class="<?= str_starts_with(uri_string(), 'admin/google-maps-import') ? 'active' : '' ?>">
                 <i class="bi bi-geo-alt me-2"></i> Captação Maps
             </a>
+            <a href="/admin/ai-settings" class="<?= str_starts_with(uri_string(), 'admin/ai-settings') ? 'active' : '' ?>">
+                <i class="bi bi-stars me-2"></i> Configurações de IA
+            </a>
             <a href="/admin/contracts" class="<?= str_starts_with(uri_string(), 'admin/contracts') ? 'active' : '' ?>">
                 <i class="bi bi-file-earmark-text me-2"></i> Contratos
             </a>

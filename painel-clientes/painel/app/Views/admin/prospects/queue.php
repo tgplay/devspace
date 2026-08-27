@@ -142,6 +142,12 @@ $waLink = $waPhone ? '#wa-open' : null;
                             <i class="bi bi-clipboard me-1"></i><span id="copy-lbl">Copiar</span>
                         </button>
                     </div>
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        <button type="button" onclick="generateAiMsg()" class="btn btn-sm btn-outline-primary" id="ai-btn">
+                            <i class="bi bi-stars me-1"></i>Gerar com IA
+                        </button>
+                        <span id="ai-error" class="text-danger small d-none"></span>
+                    </div>
                 </div>
 
                 <!-- Ações -->
@@ -226,10 +232,20 @@ $waLink = $waPhone ? '#wa-open' : null;
 </div>
 
 <script>
-(function () {
-    const hour = new Date().getHours();
-    const saudacao = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite';
+const prospectId = <?= (int) $prospect['id'] ?>;
 
+const hour = new Date().getHours();
+const saudacao = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite';
+
+function updateWaLink() {
+    const waBtn = document.getElementById('wa-btn');
+    if (! waBtn) return;
+    const phone = waBtn.dataset.phone;
+    const text  = document.getElementById('wa-message').value;
+    waBtn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+}
+
+(function () {
     const emojiStar  = String.fromCodePoint(0x2B50);
     const emojiSmile = String.fromCodePoint(0x1F642);
 
@@ -239,12 +255,42 @@ $waLink = $waPhone ? '#wa-open' : null;
         .replace(/\{\{STAR\}\}/g,  emojiStar)
         .replace(/\{\{SMILE\}\}/g, emojiSmile);
 
-    const waBtn = document.getElementById('wa-btn');
-    if (waBtn) {
-        const phone = waBtn.dataset.phone;
-        waBtn.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(textarea.value);
-    }
+    updateWaLink();
 })();
+
+function generateAiMsg() {
+    const btn      = document.getElementById('ai-btn');
+    const errSpan  = document.getElementById('ai-error');
+    const textarea = document.getElementById('wa-message');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Gerando...';
+    errSpan.classList.add('d-none');
+
+    fetch('/admin/prospects/' + prospectId + '/generate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'saudacao=' + encodeURIComponent(saudacao),
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                textarea.value = data.message;
+                updateWaLink();
+            } else {
+                errSpan.textContent = data.error || 'Não foi possível gerar a mensagem.';
+                errSpan.classList.remove('d-none');
+            }
+        })
+        .catch(function () {
+            errSpan.textContent = 'Erro de conexão. Tente novamente.';
+            errSpan.classList.remove('d-none');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-stars me-1"></i>Gerar com IA';
+        });
+}
 
 function copyMsg() {
     navigator.clipboard.writeText(document.getElementById('wa-message').value).then(function () {

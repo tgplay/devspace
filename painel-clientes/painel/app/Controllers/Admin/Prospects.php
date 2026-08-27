@@ -2,7 +2,9 @@
 
 namespace App\Controllers\Admin;
 
+use App\Libraries\GroqMessageGenerator;
 use App\Models\ProspectModel;
+use App\Models\SettingModel;
 use App\Models\UserModel;
 use CodeIgniter\Controller;
 
@@ -217,6 +219,27 @@ class Prospects extends Controller
     {
         session()->remove('queue_skipped');
         return redirect()->to('/admin/prospects/queue');
+    }
+
+    public function generateMessage(int $id)
+    {
+        $prospect = (new ProspectModel())->find($id);
+        if (! $prospect) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Prospecto não encontrado.']);
+        }
+
+        $apiKey    = (new SettingModel())->get('groq_api_key', '');
+        $adminName = trim(session()->get('user_name') ?? 'Eu');
+        $saudacao  = $this->request->getPost('saudacao') ?: 'boa tarde';
+
+        try {
+            $generator = new GroqMessageGenerator($apiKey);
+            $message   = $generator->generate($prospect, $adminName, $saudacao);
+
+            return $this->response->setJSON(['success' => true, 'message' => $message]);
+        } catch (\RuntimeException $e) {
+            return $this->response->setJSON(['success' => false, 'error' => $e->getMessage()]);
+        }
     }
 
     public function importForm(): string
