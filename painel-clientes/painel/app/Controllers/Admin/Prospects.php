@@ -270,6 +270,48 @@ class Prospects extends Controller
         ]);
     }
 
+    public function archive(): string
+    {
+        $filter  = $this->request->getGet('status') ?? 'all';
+        $query   = trim($this->request->getGet('q') ?? '');
+        $perPage = (int) ($this->request->getGet('per_page') ?? session()->get('archive_per_page') ?? 25);
+        if (! in_array($perPage, [10, 25, 50, 100, 200], true)) {
+            $perPage = 25;
+        }
+        if ($this->request->getGet('per_page')) {
+            session()->set('archive_per_page', $perPage);
+        }
+
+        $model = (new ProspectModel())->where('status !=', 'new');
+
+        if ($filter !== 'all') {
+            $model->where('status', $filter);
+        }
+
+        if ($query !== '') {
+            $model->groupStart()
+                  ->like('name', $query)
+                  ->orLike('company', $query)
+                  ->orLike('phone', $query)
+                  ->orLike('email', $query)
+                  ->groupEnd();
+        }
+
+        $prospects = $model->orderBy('updated_at', 'DESC')->paginate($perPage, 'archive');
+        $pager     = $model->pager;
+
+        $lastCalls = $this->lastInteractionsFor(array_column($prospects, 'id'));
+
+        return view('admin/prospects/archive', [
+            'prospects'    => $prospects,
+            'lastCalls'    => $lastCalls,
+            'activeFilter' => $filter,
+            'query'        => $query,
+            'pager'        => $pager,
+            'perPage'      => $perPage,
+        ]);
+    }
+
     public function logCall(int $id)
     {
         $notes = trim($this->request->getPost('notes') ?? '');
@@ -303,22 +345,29 @@ class Prospects extends Controller
             ->orderBy($dateField, 'ASC')
             ->findAll();
 
-        $lastCalls = [];
-        if (! empty($prospects)) {
-            $ids   = array_column($prospects, 'id');
-            $calls = (new ProspectCallModel())
-                ->whereIn('prospect_id', $ids)
-                ->orderBy('created_at', 'DESC')
-                ->findAll();
+        return [$prospects, $this->lastInteractionsFor(array_column($prospects, 'id'))];
+    }
 
-            foreach ($calls as $call) {
-                if (! isset($lastCalls[$call['prospect_id']])) {
-                    $lastCalls[$call['prospect_id']] = $call;
-                }
+    /** @return array indexado por prospect_id com a interação mais recente de cada um */
+    private function lastInteractionsFor(array $prospectIds): array
+    {
+        if (empty($prospectIds)) {
+            return [];
+        }
+
+        $calls = (new ProspectCallModel())
+            ->whereIn('prospect_id', $prospectIds)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        $lastCalls = [];
+        foreach ($calls as $call) {
+            if (! isset($lastCalls[$call['prospect_id']])) {
+                $lastCalls[$call['prospect_id']] = $call;
             }
         }
 
-        return [$prospects, $lastCalls];
+        return $lastCalls;
     }
 
     private function exportFollowupCsv(string $status, string $dateField, string $filename): void
