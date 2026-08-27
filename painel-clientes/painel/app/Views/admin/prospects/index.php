@@ -3,22 +3,24 @@
 
 <?php
 $statusLabel = [
-    'new'             => 'Novo',
-    'contacted'       => 'Contatado',
-    'qualified'       => 'Qualificado',
-    'proposal_sent'   => 'Proposta enviada',
-    'won'             => 'Ganho',
-    'lost'            => 'Perdido',
-    'phone_followup'  => 'Aguardando ligação',
+    'new'                => 'Novo',
+    'contacted'          => 'Contatado',
+    'qualified'          => 'Qualificado',
+    'proposal_sent'      => 'Proposta enviada',
+    'won'                => 'Ganho',
+    'lost'               => 'Perdido',
+    'phone_followup'     => 'Aguardando ligação',
+    'whatsapp_followup'  => 'Aguardando resposta',
 ];
 $statusBadge = [
-    'new'             => 'primary',
-    'contacted'       => 'info',
-    'qualified'       => 'warning',
-    'proposal_sent'   => 'secondary',
-    'won'             => 'success',
-    'lost'            => 'danger',
-    'phone_followup'  => 'dark',
+    'new'                => 'primary',
+    'contacted'          => 'info',
+    'qualified'          => 'warning',
+    'proposal_sent'      => 'secondary',
+    'won'                => 'success',
+    'lost'               => 'danger',
+    'phone_followup'     => 'dark',
+    'whatsapp_followup'  => 'success',
 ];
 $interestLabel = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
 $sourceLabel   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];

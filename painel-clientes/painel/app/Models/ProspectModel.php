@@ -14,7 +14,7 @@ class ProspectModel extends Model
         'name', 'email', 'phone', 'company',
         'interest', 'source', 'status', 'notes',
         'rating', 'reviews_count', 'maps_url',
-        'phone_followup_at',
+        'phone_followup_at', 'whatsapp_followup_at',
     ];
 
     protected $useTimestamps = true;

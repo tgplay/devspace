@@ -11,7 +11,7 @@ use CodeIgniter\Controller;
 
 class Prospects extends Controller
 {
-    private const VALID_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost', 'phone_followup'];
+    private const VALID_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost', 'phone_followup', 'whatsapp_followup'];
 
     public function index(): string
     {
@@ -198,7 +198,10 @@ class Prospects extends Controller
         };
 
         if ($action === 'contacted') {
-            (new ProspectModel())->update($id, ['status' => 'contacted']);
+            (new ProspectModel())->update($id, [
+                'status'                => 'whatsapp_followup',
+                'whatsapp_followup_at'  => date('Y-m-d H:i:s'),
+            ]);
             $removeFromSkipped($id);
 
         } elseif ($action === 'no_whatsapp') {
@@ -249,10 +252,56 @@ class Prospects extends Controller
 
     public function phoneFollowup(): string
     {
-        $model     = new ProspectModel();
-        $prospects = $model->where('status', 'phone_followup')
-                            ->orderBy('phone_followup_at', 'ASC')
-                            ->findAll();
+        [$prospects, $lastCalls] = $this->followupList('phone_followup', 'phone_followup_at');
+
+        return view('admin/prospects/phone-followup', [
+            'prospects' => $prospects,
+            'lastCalls' => $lastCalls,
+        ]);
+    }
+
+    public function whatsappFollowup(): string
+    {
+        [$prospects, $lastCalls] = $this->followupList('whatsapp_followup', 'whatsapp_followup_at');
+
+        return view('admin/prospects/whatsapp-followup', [
+            'prospects' => $prospects,
+            'lastCalls' => $lastCalls,
+        ]);
+    }
+
+    public function logCall(int $id)
+    {
+        $notes = trim($this->request->getPost('notes') ?? '');
+
+        (new ProspectCallModel())->insert([
+            'prospect_id' => $id,
+            'notes'       => $notes ?: null,
+        ]);
+
+        return redirect()->back()->with('success', 'Interação registrada.');
+    }
+
+    public function phoneFollowupExport(): void
+    {
+        $this->exportFollowupCsv('phone_followup', 'phone_followup_at', 'follow-up-telefone.csv');
+    }
+
+    public function whatsappFollowupExport(): void
+    {
+        $this->exportFollowupCsv('whatsapp_followup', 'whatsapp_followup_at', 'follow-up-whatsapp.csv');
+    }
+
+    /**
+     * Busca prospects num status de follow-up + a última interação registrada de cada um.
+     * @return array{0: array, 1: array} [$prospects, $lastCalls indexado por prospect_id]
+     */
+    private function followupList(string $status, string $dateField): array
+    {
+        $prospects = (new ProspectModel())
+            ->where('status', $status)
+            ->orderBy($dateField, 'ASC')
+            ->findAll();
 
         $lastCalls = [];
         if (! empty($prospects)) {
@@ -269,50 +318,19 @@ class Prospects extends Controller
             }
         }
 
-        return view('admin/prospects/phone-followup', [
-            'prospects' => $prospects,
-            'lastCalls' => $lastCalls,
-        ]);
+        return [$prospects, $lastCalls];
     }
 
-    public function logCall(int $id)
+    private function exportFollowupCsv(string $status, string $dateField, string $filename): void
     {
-        $notes = trim($this->request->getPost('notes') ?? '');
-
-        (new ProspectCallModel())->insert([
-            'prospect_id' => $id,
-            'notes'       => $notes ?: null,
-        ]);
-
-        return redirect()->back()->with('success', 'Ligação registrada.');
-    }
-
-    public function phoneFollowupExport(): void
-    {
-        $model     = new ProspectModel();
-        $prospects = $model->where('status', 'phone_followup')
-                            ->orderBy('phone_followup_at', 'ASC')
-                            ->findAll();
-
-        $ids   = array_column($prospects, 'id');
-        $calls = empty($ids) ? [] : (new ProspectCallModel())
-            ->whereIn('prospect_id', $ids)
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
-
-        $lastCalls = [];
-        foreach ($calls as $call) {
-            if (! isset($lastCalls[$call['prospect_id']])) {
-                $lastCalls[$call['prospect_id']] = $call;
-            }
-        }
+        [$prospects, $lastCalls] = $this->followupList($status, $dateField);
 
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="follow-up-telefone.csv"');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
 
         $out = fopen('php://output', 'w');
         fwrite($out, "\xEF\xBB\xBF"); // BOM pro Excel reconhecer UTF-8
-        fputcsv($out, ['Nome', 'Telefone', 'Empresa', 'Nota', 'Avaliações', 'Entrada na lista', 'Última ligação', 'Observação'], ';');
+        fputcsv($out, ['Nome', 'Telefone', 'Empresa', 'Nota', 'Avaliações', 'Entrada na lista', 'Última interação', 'Observação'], ';');
 
         foreach ($prospects as $p) {
             $lastCall = $lastCalls[$p['id']] ?? null;
@@ -322,7 +340,7 @@ class Prospects extends Controller
                 $p['company'],
                 $p['rating'],
                 $p['reviews_count'],
-                $p['phone_followup_at'] ? fmt_dt($p['phone_followup_at'], 'd/m/Y') : '',
+                $p[$dateField] ? fmt_dt($p[$dateField], 'd/m/Y') : '',
                 $lastCall ? fmt_dt($lastCall['created_at'], 'd/m/Y') : '',
                 $lastCall['notes'] ?? '',
             ], ';');
