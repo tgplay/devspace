@@ -78,6 +78,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('prospects/(:num)/generate-message', 'Admin\Prospects::generateMessage/$1');
     $routes->get('prospects/phone-followup',        'Admin\Prospects::phoneFollowup');
     $routes->get('prospects/phone-followup/export', 'Admin\Prospects::phoneFollowupExport');
+    $routes->get('prospects/whatsapp-followup',        'Admin\Prospects::whatsappFollowup');
+    $routes->get('prospects/whatsapp-followup/export', 'Admin\Prospects::whatsappFollowupExport');
     $routes->post('prospects/(:num)/log-call',      'Admin\Prospects::logCall/$1');
     $routes->get('prospects/import',                'Admin\Prospects::importForm');
     $routes->post('prospects/import',               'Admin\Prospects::importProcess');

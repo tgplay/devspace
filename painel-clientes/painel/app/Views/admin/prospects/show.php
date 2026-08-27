@@ -5,22 +5,24 @@
 $isNew = $prospect === null;
 
 $statusLabel = [
-    'new'             => 'Novo',
-    'contacted'       => 'Contatado',
-    'qualified'       => 'Qualificado',
-    'proposal_sent'   => 'Proposta enviada',
-    'won'             => 'Ganho',
-    'lost'            => 'Perdido',
-    'phone_followup'  => 'Aguardando ligação',
+    'new'                => 'Novo',
+    'contacted'          => 'Contatado',
+    'qualified'          => 'Qualificado',
+    'proposal_sent'      => 'Proposta enviada',
+    'won'                => 'Ganho',
+    'lost'               => 'Perdido',
+    'phone_followup'     => 'Aguardando ligação',
+    'whatsapp_followup'  => 'Aguardando resposta',
 ];
 $statusBadge = [
-    'new'             => 'primary',
-    'contacted'       => 'info',
-    'qualified'       => 'warning',
-    'proposal_sent'   => 'secondary',
-    'won'             => 'success',
-    'lost'            => 'danger',
-    'phone_followup'  => 'dark',
+    'new'                => 'primary',
+    'contacted'          => 'info',
+    'qualified'          => 'warning',
+    'proposal_sent'      => 'secondary',
+    'won'                => 'success',
+    'lost'               => 'danger',
+    'phone_followup'     => 'dark',
+    'whatsapp_followup'  => 'success',
 ];
 $interestOpts = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
 $sourceOpts   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];
@@ -240,23 +242,23 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
         </script>
         <?php endif ?>
 
-        <!-- Histórico de ligações -->
+        <!-- Histórico de contatos -->
         <div class="card">
             <div class="card-header fw-semibold">
-                <i class="bi bi-telephone me-1"></i> Histórico de ligações
+                <i class="bi bi-clock-history me-1"></i> Histórico de contatos
             </div>
             <div class="card-body">
                 <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/log-call" class="mb-3">
                     <?= csrf_field() ?>
                     <textarea name="notes" class="form-control form-control-sm mb-2" rows="2"
-                              placeholder="O que aconteceu na ligação? (opcional)"></textarea>
+                              placeholder="O que aconteceu (ligação, retorno no WhatsApp, etc.)? (opcional)"></textarea>
                     <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="bi bi-telephone-outbound me-1"></i> Registrar ligação
+                        <i class="bi bi-plus-circle me-1"></i> Registrar interação
                     </button>
                 </form>
 
                 <?php if (empty($calls)): ?>
-                <p class="text-muted small mb-0">Nenhuma ligação registrada ainda.</p>
+                <p class="text-muted small mb-0">Nenhuma interação registrada ainda.</p>
                 <?php else: ?>
                 <ul class="list-group list-group-flush">
                     <?php foreach ($calls as $call): ?>
