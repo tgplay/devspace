@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Libraries\GroqMessageGenerator;
+use App\Models\ProspectCallModel;
 use App\Models\ProspectModel;
 use App\Models\SettingModel;
 use App\Models\UserModel;
@@ -10,7 +11,7 @@ use CodeIgniter\Controller;
 
 class Prospects extends Controller
 {
-    private const VALID_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost'];
+    private const VALID_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost', 'phone_followup'];
 
     public function index(): string
     {
@@ -70,7 +71,12 @@ class Prospects extends Controller
             return redirect()->to('/admin/prospects')->with('error', 'Prospecto não encontrado.');
         }
 
-        return view('admin/prospects/show', ['prospect' => $prospect]);
+        $calls = (new ProspectCallModel())
+            ->where('prospect_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        return view('admin/prospects/show', ['prospect' => $prospect, 'calls' => $calls]);
     }
 
     public function update(int $id)
@@ -196,11 +202,10 @@ class Prospects extends Controller
             $removeFromSkipped($id);
 
         } elseif ($action === 'no_whatsapp') {
-            $model   = new ProspectModel();
-            $current = $model->find($id);
-            $note    = '[Sem WhatsApp — contato via WA não disponível]';
-            $notes   = trim(($current['notes'] ?? '') . "\n" . $note);
-            $model->update($id, ['status' => 'contacted', 'notes' => $notes]);
+            (new ProspectModel())->update($id, [
+                'status'             => 'phone_followup',
+                'phone_followup_at'  => date('Y-m-d H:i:s'),
+            ]);
             $removeFromSkipped($id);
 
         } elseif ($action === 'disqualify') {
@@ -240,6 +245,91 @@ class Prospects extends Controller
         } catch (\RuntimeException $e) {
             return $this->response->setJSON(['success' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    public function phoneFollowup(): string
+    {
+        $model     = new ProspectModel();
+        $prospects = $model->where('status', 'phone_followup')
+                            ->orderBy('phone_followup_at', 'ASC')
+                            ->findAll();
+
+        $lastCalls = [];
+        if (! empty($prospects)) {
+            $ids   = array_column($prospects, 'id');
+            $calls = (new ProspectCallModel())
+                ->whereIn('prospect_id', $ids)
+                ->orderBy('created_at', 'DESC')
+                ->findAll();
+
+            foreach ($calls as $call) {
+                if (! isset($lastCalls[$call['prospect_id']])) {
+                    $lastCalls[$call['prospect_id']] = $call;
+                }
+            }
+        }
+
+        return view('admin/prospects/phone-followup', [
+            'prospects' => $prospects,
+            'lastCalls' => $lastCalls,
+        ]);
+    }
+
+    public function logCall(int $id)
+    {
+        $notes = trim($this->request->getPost('notes') ?? '');
+
+        (new ProspectCallModel())->insert([
+            'prospect_id' => $id,
+            'notes'       => $notes ?: null,
+        ]);
+
+        return redirect()->back()->with('success', 'Ligação registrada.');
+    }
+
+    public function phoneFollowupExport(): void
+    {
+        $model     = new ProspectModel();
+        $prospects = $model->where('status', 'phone_followup')
+                            ->orderBy('phone_followup_at', 'ASC')
+                            ->findAll();
+
+        $ids   = array_column($prospects, 'id');
+        $calls = empty($ids) ? [] : (new ProspectCallModel())
+            ->whereIn('prospect_id', $ids)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        $lastCalls = [];
+        foreach ($calls as $call) {
+            if (! isset($lastCalls[$call['prospect_id']])) {
+                $lastCalls[$call['prospect_id']] = $call;
+            }
+        }
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="follow-up-telefone.csv"');
+
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF"); // BOM pro Excel reconhecer UTF-8
+        fputcsv($out, ['Nome', 'Telefone', 'Empresa', 'Nota', 'Avaliações', 'Entrada na lista', 'Última ligação', 'Observação'], ';');
+
+        foreach ($prospects as $p) {
+            $lastCall = $lastCalls[$p['id']] ?? null;
+            fputcsv($out, [
+                $p['name'],
+                $p['phone'],
+                $p['company'],
+                $p['rating'],
+                $p['reviews_count'],
+                $p['phone_followup_at'] ? fmt_dt($p['phone_followup_at'], 'd/m/Y') : '',
+                $lastCall ? fmt_dt($lastCall['created_at'], 'd/m/Y') : '',
+                $lastCall['notes'] ?? '',
+            ], ';');
+        }
+
+        fclose($out);
+        exit;
     }
 
     public function importForm(): string

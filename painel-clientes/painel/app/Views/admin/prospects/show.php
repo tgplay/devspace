@@ -5,20 +5,22 @@
 $isNew = $prospect === null;
 
 $statusLabel = [
-    'new'           => 'Novo',
-    'contacted'     => 'Contatado',
-    'qualified'     => 'Qualificado',
-    'proposal_sent' => 'Proposta enviada',
-    'won'           => 'Ganho',
-    'lost'          => 'Perdido',
+    'new'             => 'Novo',
+    'contacted'       => 'Contatado',
+    'qualified'       => 'Qualificado',
+    'proposal_sent'   => 'Proposta enviada',
+    'won'             => 'Ganho',
+    'lost'            => 'Perdido',
+    'phone_followup'  => 'Aguardando ligação',
 ];
 $statusBadge = [
-    'new'           => 'primary',
-    'contacted'     => 'info',
-    'qualified'     => 'warning',
-    'proposal_sent' => 'secondary',
-    'won'           => 'success',
-    'lost'          => 'danger',
+    'new'             => 'primary',
+    'contacted'       => 'info',
+    'qualified'       => 'warning',
+    'proposal_sent'   => 'secondary',
+    'won'             => 'success',
+    'lost'            => 'danger',
+    'phone_followup'  => 'dark',
 ];
 $interestOpts = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
 $sourceOpts   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];
@@ -237,6 +239,38 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
         }
         </script>
         <?php endif ?>
+
+        <!-- Histórico de ligações -->
+        <div class="card">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-telephone me-1"></i> Histórico de ligações
+            </div>
+            <div class="card-body">
+                <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/log-call" class="mb-3">
+                    <?= csrf_field() ?>
+                    <textarea name="notes" class="form-control form-control-sm mb-2" rows="2"
+                              placeholder="O que aconteceu na ligação? (opcional)"></textarea>
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-telephone-outbound me-1"></i> Registrar ligação
+                    </button>
+                </form>
+
+                <?php if (empty($calls)): ?>
+                <p class="text-muted small mb-0">Nenhuma ligação registrada ainda.</p>
+                <?php else: ?>
+                <ul class="list-group list-group-flush">
+                    <?php foreach ($calls as $call): ?>
+                    <li class="list-group-item px-0">
+                        <div class="small text-muted"><?= fmt_dt($call['created_at'], 'd/m/Y H:i') ?></div>
+                        <?php if (! empty($call['notes'])): ?>
+                        <div class="small"><?= nl2br(esc($call['notes'])) ?></div>
+                        <?php endif ?>
+                    </li>
+                    <?php endforeach ?>
+                </ul>
+                <?php endif ?>
+            </div>
+        </div>
 
         <!-- Ações -->
         <div class="card">

@@ -76,6 +76,9 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('prospects/queue',                 'Admin\Prospects::queue');
     $routes->post('prospects/queue/clear',          'Admin\Prospects::queueClearSkips');
     $routes->post('prospects/(:num)/generate-message', 'Admin\Prospects::generateMessage/$1');
+    $routes->get('prospects/phone-followup',        'Admin\Prospects::phoneFollowup');
+    $routes->get('prospects/phone-followup/export', 'Admin\Prospects::phoneFollowupExport');
+    $routes->post('prospects/(:num)/log-call',      'Admin\Prospects::logCall/$1');
     $routes->get('prospects/import',                'Admin\Prospects::importForm');
     $routes->post('prospects/import',               'Admin\Prospects::importProcess');
     $routes->get('prospects/new',                   'Admin\Prospects::create');
