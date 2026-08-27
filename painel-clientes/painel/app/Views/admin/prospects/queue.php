@@ -149,6 +149,9 @@ $waLink = $waPhone ? '#wa-open' : null;
                             <i class="bi bi-stars me-1"></i>Gerar com IA
                         </button>
                         <span id="ai-error" class="text-danger small d-none"></span>
+                        <span id="ai-hint" class="text-muted small d-none">
+                            <i class="bi bi-info-circle me-1"></i>Prefira "Copiar" — o botão "Abrir WhatsApp" pode corromper emojis
+                        </span>
                     </div>
                 </div>
 
@@ -272,6 +275,7 @@ function generateAiMsg() {
             if (data.success) {
                 textarea.value = data.message;
                 updateWaLink();
+                document.getElementById('ai-hint').classList.remove('d-none');
             } else {
                 errSpan.textContent = data.error || 'Não foi possível gerar a mensagem.';
                 errSpan.classList.remove('d-none');
