@@ -234,6 +234,9 @@ $waLink = $waPhone ? '#wa-open' : null;
 <script>
 const prospectId = <?= (int) $prospect['id'] ?>;
 
+const hour = new Date().getHours();
+const saudacao = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite';
+
 function updateWaLink() {
     const waBtn = document.getElementById('wa-btn');
     if (! waBtn) return;
@@ -243,9 +246,6 @@ function updateWaLink() {
 }
 
 (function () {
-    const hour = new Date().getHours();
-    const saudacao = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite';
-
     const emojiStar  = String.fromCodePoint(0x2B50);
     const emojiSmile = String.fromCodePoint(0x1F642);
 
@@ -267,7 +267,11 @@ function generateAiMsg() {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Gerando...';
     errSpan.classList.add('d-none');
 
-    fetch('/admin/prospects/' + prospectId + '/generate-message', { method: 'POST' })
+    fetch('/admin/prospects/' + prospectId + '/generate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'saudacao=' + encodeURIComponent(saudacao),
+    })
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.success) {

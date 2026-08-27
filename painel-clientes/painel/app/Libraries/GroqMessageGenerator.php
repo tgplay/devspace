@@ -11,7 +11,7 @@ class GroqMessageGenerator
     {
     }
 
-    public function generate(array $prospect, string $adminName): string
+    public function generate(array $prospect, string $adminName, string $saudacao): string
     {
         if ($this->apiKey === '') {
             throw new \RuntimeException('API Key do Groq não configurada. Configure em Configurações de IA.');
@@ -20,7 +20,7 @@ class GroqMessageGenerator
         $body = json_encode([
             'model'    => self::MODEL,
             'messages' => [
-                ['role' => 'system', 'content' => $this->buildSystemPrompt($adminName)],
+                ['role' => 'system', 'content' => $this->buildSystemPrompt($adminName, $saudacao)],
                 ['role' => 'user',   'content' => $this->buildUserPrompt($prospect)],
             ],
         ]);
@@ -56,17 +56,17 @@ class GroqMessageGenerator
         return trim($text);
     }
 
-    private function buildSystemPrompt(string $adminName): string
+    private function buildSystemPrompt(string $adminName, string $saudacao): string
     {
         return <<<PROMPT
 Você é {$adminName}, dono(a) de uma agência que cria sites, sistemas e apps para pequenos negócios locais.
 
 Escreva uma mensagem de WhatsApp curta (3 a 4 linhas) para o primeiro contato com o negócio que o usuário descrever, oferecendo a criação de um site (ou sistema/app, se fizer mais sentido pelo contexto). A mensagem deve:
+- Começar com uma saudação natural baseada neste horário do dia: "{$saudacao}". Pode variar a forma de dizer isso (ex: "Boa tarde!", "Oi, boa tarde", etc.) — não precisa ser sempre a mesma frase, mas o período do dia deve ser esse.
 - Soar natural e pessoal, como se {$adminName} tivesse pesquisado sobre o negócio antes de mandar, não genérica nem robótica.
 - Mencionar algo específico sobre o negócio (nome, nota ou avaliações no Google) quando disponível, sem exagerar em elogios.
 - Ter um tom leve e consultivo, sem pressão de venda ("hard sell").
 - Terminar com uma pergunta simples de baixo compromisso (ex: se pode mostrar algo rápido, sem obrigação).
-- Não usar saudação fixa como "bom dia/boa tarde" — comece direto.
 - Não incluir emojis em excesso (no máximo 1).
 - Revise mentalmente a frase antes de responder, sem repetir palavras por engano (ex: "vi vi", "que que").
 - Responda APENAS com o texto da mensagem, sem aspas, sem explicações, sem markdown.

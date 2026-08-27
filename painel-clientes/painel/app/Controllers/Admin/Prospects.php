@@ -230,10 +230,11 @@ class Prospects extends Controller
 
         $apiKey    = (new SettingModel())->get('groq_api_key', '');
         $adminName = trim(session()->get('user_name') ?? 'Eu');
+        $saudacao  = $this->request->getPost('saudacao') ?: 'boa tarde';
 
         try {
             $generator = new GroqMessageGenerator($apiKey);
-            $message   = $generator->generate($prospect, $adminName);
+            $message   = $generator->generate($prospect, $adminName, $saudacao);
 
             return $this->response->setJSON(['success' => true, 'message' => $message]);
         } catch (\RuntimeException $e) {
