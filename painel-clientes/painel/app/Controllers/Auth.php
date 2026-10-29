@@ -43,13 +43,25 @@ class Auth extends Controller
         return redirect()->to('/login');
     }
 
+    /** Cadastro público fechado por padrão; habilite com app.allowRegistration=true no .env. */
+    private function registrationOpen(): bool
+    {
+        return filter_var(env('app.allowRegistration', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
     public function registerForm()
     {
+        if (! $this->registrationOpen()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         return view('auth/register');
     }
 
     public function register()
     {
+        if (! $this->registrationOpen()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $rules = [
             'name'     => 'required|min_length[2]|max_length[120]',
             'email'    => 'required|valid_email|is_unique[users.email]',

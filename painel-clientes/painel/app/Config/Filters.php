@@ -5,6 +5,7 @@ namespace Config;
 use App\Filters\AdminFilter;
 use App\Filters\AuthFilter;
 use App\Filters\DynamicBaseUrl;
+use App\Filters\ThrottleFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -40,6 +41,7 @@ class Filters extends BaseFilters
         'auth'          => AuthFilter::class,
         'admin'         => AdminFilter::class,
         'dynamicbaseurl' => DynamicBaseUrl::class,
+        'throttle'      => ThrottleFilter::class,
     ];
 
     /**
@@ -80,7 +82,7 @@ class Filters extends BaseFilters
         'before' => [
             'dynamicbaseurl',
             // 'honeypot',
-            // 'csrf',
+            'csrf' => ['except' => ['api/contact/ticket']],
             // 'invalidchars',
         ],
         'after' => [
@@ -113,5 +115,7 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'throttle' => ['before' => ['api/contact/ticket']],
+    ];
 }

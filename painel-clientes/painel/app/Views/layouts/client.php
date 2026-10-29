@@ -14,6 +14,7 @@
         .sidebar .nav-label { font-size: 0.7rem; color: #4a5568; padding: 16px 20px 4px; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar .brand { color: #fff; font-weight: 700; }
     </style>
+    <?= view('layouts/_csrf') ?>
 </head>
 <body>
 <div class="d-flex">

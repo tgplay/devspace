@@ -16,6 +16,18 @@ class Contact extends Controller
         $message = trim($this->request->getPost('message') ?? '');
         $tipo    = $this->request->getPost('tipo') ?? 'geral';
 
+        // Honeypot: campo oculto que humanos não preenchem. Responde "sucesso" para não orientar bots.
+        if (trim((string) $this->request->getPost('website')) !== '') {
+            return $this->response->setJSON(['success' => true, 'message' => 'Mensagem enviada com sucesso! Em breve entraremos em contato.']);
+        }
+
+        if (mb_strlen($name) > 120 || mb_strlen($email) > 160 || mb_strlen($phone) > 30 || mb_strlen($message) > 5000) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'success' => false,
+                'message' => 'Algum campo excede o tamanho permitido.',
+            ]);
+        }
+
         if ($name === '' || $email === '' || $message === '') {
             return $this->response->setStatusCode(422)->setJSON([
                 'success' => false,

@@ -26,10 +26,12 @@
             <button type="submit" class="btn btn-primary w-100">Entrar</button>
         </form>
 
+        <?php if (filter_var(env('app.allowRegistration', false), FILTER_VALIDATE_BOOLEAN)): ?>
         <hr>
         <p class="text-center mb-0 small">
             Não tem conta? <a href="/register">Cadastre-se</a>
         </p>
+        <?php endif ?>
     </div>
 </div>
 

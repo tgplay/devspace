@@ -1,6 +1,11 @@
 # Dependências PHP
 painel/vendor/
 
+# Backups do banco e variáveis de ambiente da raiz
+backups/
+.env
+!.env.example
+
 # Arquivos de ambiente (contêm credenciais)
 painel/.env
 
@@ -9,6 +14,7 @@ painel/writable/cache/*
 painel/writable/logs/*
 painel/writable/session/*
 painel/writable/uploads/*
+painel/writable/cnpj/
 !painel/writable/cache/.gitkeep
 !painel/writable/logs/.gitkeep
 !painel/writable/session/.gitkeep
@@ -51,3 +57,7 @@ wordpress/wp-content/themes/index.php
 # exceções: manter robots.txt e o tema filho completo
 !wordpress/robots.txt
 !wordpress/wp-content/themes/astra-child/
+
+# Python
+__pycache__/
+*.pyc

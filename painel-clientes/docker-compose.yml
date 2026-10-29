@@ -20,6 +20,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./painel:/var/www/painel
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GMAPS_API_KEY: ${GMAPS_API_KEY:-}
     command: sh -c "chmod -R 777 /var/www/painel/writable && php-fpm"
     depends_on:
       db:
@@ -42,6 +45,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  # Backup diário do PostgreSQL em ./backups (mantém os últimos 14 dias)
+  db_backup:
+    image: postgres:15-alpine
+    environment:
+      PGHOST: db
+      PGDATABASE: ${DB_NAME:-painel_clientes}
+      PGUSER: ${DB_USER:-painel_user}
+      PGPASSWORD: ${DB_PASS:-painel_pass}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup/backup_loop.sh:/backup_loop.sh:ro
+    entrypoint: ["sh", "/backup_loop.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   wordpress:

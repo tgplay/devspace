@@ -27,4 +27,20 @@ class SettingModel extends Model
             $this->insert(['key' => $key, 'value' => $value]);
         }
     }
+
+    /**
+     * Segredos (chaves de API): a variável de ambiente tem prioridade sobre o valor
+     * salvo na tabela settings. Em produção, prefira sempre a variável de ambiente.
+     */
+    public function secret(string $key, string $envName): string
+    {
+        $fromEnv = (string) env($envName, '');
+        return $fromEnv !== '' ? $fromEnv : (string) $this->get($key, '');
+    }
+
+    /** Dica mascarada para exibir na tela sem expor a chave (ex.: "••••a1b2"). */
+    public static function mask(string $secret): string
+    {
+        return $secret === '' ? '' : '••••' . substr($secret, -4);
+    }
 }
