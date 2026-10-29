@@ -16,6 +16,27 @@ function gps_contact_submit(WP_REST_Request $request): WP_REST_Response
     $phone   = sanitize_text_field($request->get_param('phone')   ?? '');
     $message = sanitize_textarea_field($request->get_param('message') ?? '');
     $tipo    = sanitize_key($request->get_param('tipo')           ?? 'geral');
+    $website = (string) ($request->get_param('website') ?? '');
+
+    // Honeypot: bots preenchem o campo oculto; finge sucesso e descarta.
+    if ($website !== '') {
+        return new WP_REST_Response(
+            ['success' => true, 'message' => 'Mensagem enviada com sucesso! Em breve entraremos em contato.'],
+            200
+        );
+    }
+
+    // Limite por visitante: 5 envios por hora por IP (transient com hash do IP).
+    $ip      = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : 'unknown';
+    $rl_key  = 'gps_contact_rl_' . md5($ip);
+    $rl_hits = (int) get_transient($rl_key);
+    if ($rl_hits >= 5) {
+        return new WP_REST_Response(
+            ['success' => false, 'message' => 'Muitas tentativas. Tente novamente mais tarde.'],
+            429
+        );
+    }
+    set_transient($rl_key, $rl_hits + 1, HOUR_IN_SECONDS);
 
     if ($name === '' || $email === '' || $message === '') {
         return new WP_REST_Response(

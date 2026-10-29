@@ -12,8 +12,8 @@ add_action('wp_footer', function (): void {
 <div id="dv-cookie-banner" class="dv-cookie-banner" role="dialog"
      aria-live="polite" aria-label="Aviso de cookies" hidden>
     <p class="dv-cookie-banner__text">
-        Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com o uso de cookies.
-        <a href="<?php echo esc_url($privacy_url); ?>">Saiba mais</a>.
+        Usamos apenas armazenamento essencial (como lembrar o tema e este aviso), sem cookies de publicidade ou análise.
+        <a href="<?php echo esc_url($privacy_url); ?>">Política de Privacidade</a>.
     </p>
     <button class="dv-cookie-banner__btn" id="dv-cookie-accept">Entendi</button>
 </div>

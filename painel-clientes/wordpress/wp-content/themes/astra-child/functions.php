@@ -224,3 +224,4 @@ add_action('wp_head', function () {
 require_once get_stylesheet_directory() . '/inc/rest-contact.php';
 require_once get_stylesheet_directory() . '/inc/contact-shortcode.php';
 require_once get_stylesheet_directory() . '/inc/cookie-banner.php';
+require_once get_stylesheet_directory() . '/inc/legal-pages.php';

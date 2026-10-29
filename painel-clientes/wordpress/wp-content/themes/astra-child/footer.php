@@ -9,6 +9,12 @@ defined('ABSPATH') || exit;
             Desenvolvido por
             <a href="https://github.com/tgplay" target="_blank" rel="noopener noreferrer">Tiago Martins</a>
             para WordPress
+            <?php
+            $dv_priv  = function_exists('gps_legal_url') ? gps_legal_url(GPS_LEGAL_SLUG_PRIVACY) : '';
+            $dv_terms = function_exists('gps_legal_url') ? gps_legal_url(GPS_LEGAL_SLUG_TERMS) : '';
+            if ($dv_priv)  { echo '&nbsp;|&nbsp;<a href="' . esc_url($dv_priv)  . '">Privacidade</a>'; }
+            if ($dv_terms) { echo '&nbsp;|&nbsp;<a href="' . esc_url($dv_terms) . '">Termos de Uso</a>'; }
+            ?>
         </p>
     </div>
 </footer>

@@ -57,13 +57,21 @@ add_shortcode('gps_contact_form', function (array $atts): string {
                           placeholder="Como podemos ajudar?" required></textarea>
             </div>
 
+            <div style="position:absolute;left:-9999px;top:-9999px;height:0;overflow:hidden" aria-hidden="true">
+                <label>Não preencha este campo <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+            </div>
+
             <div class="gps-form__feedback" hidden></div>
 
             <button type="submit" class="gps-btn gps-btn--primary gps-btn--block">
                 Enviar mensagem &rarr;
             </button>
+            <?php $privacy = function_exists('gps_legal_url') ? gps_legal_url(GPS_LEGAL_SLUG_PRIVACY) : ''; ?>
             <p class="gps-form__privacy">
-                🔒 Seus dados estão protegidos. Não enviamos spam.
+                🔒 Usamos seus dados só para responder a esta mensagem. Não enviamos spam.
+                <?php if ($privacy): ?>
+                Saiba mais na <a href="<?php echo esc_url($privacy); ?>">Política de Privacidade</a>.
+                <?php endif; ?>
             </p>
         </form>
     </div>
@@ -140,6 +148,7 @@ add_shortcode('gps_contact_form', function (array $atts): string {
                     phone:   form.phone.value.trim(),
                     message: form.message.value.trim(),
                     tipo:    tipoVal,
+                    website: form.website ? form.website.value : '',
                 }),
             })
             .then(function (r) { return r.json(); })
