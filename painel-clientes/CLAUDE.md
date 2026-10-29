@@ -203,6 +203,10 @@ docker compose exec -T db psql -U painel_user -d painel_clientes -c "SELECT * FR
 
 # Reset total (apaga volumes)
 docker compose down -v
+
+# Levar o painel (com os dados) para outra máquina: ver scripts/migracao/README.md
+bash scripts/migracao/exportar.sh
+bash scripts/migracao/importar.sh <pacote.tar.gz>
 ```
 
 ## Desempenho no Docker do Windows

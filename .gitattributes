@@ -1,0 +1,2 @@
+# Scripts shell sempre com fim de linha LF: com CRLF (padrão do Windows) o bash quebra.
+*.sh text eol=lf
