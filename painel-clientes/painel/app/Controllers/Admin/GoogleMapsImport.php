@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Models\SettingModel;
+use App\Libraries\PlacesClient;
 use App\Models\ProspectModel;
 use CodeIgniter\Controller;
 
@@ -19,7 +20,9 @@ class GoogleMapsImport extends Controller
     {
         return view('admin/google-maps-import/index', [
             'title'      => 'Captação Google Maps',
-            'apiKey'     => $this->settings->get('gmaps_api_key', ''),
+            'apiKey'     => $this->settings->secret('gmaps_api_key', 'GMAPS_API_KEY'),
+            'apiKeyHint' => SettingModel::mask($this->settings->secret('gmaps_api_key', 'GMAPS_API_KEY')),
+            'fromEnv'    => (string) env('GMAPS_API_KEY', '') !== '',
             'minRating'  => $this->settings->get('gmaps_min_rating', '4.0'),
             'minReviews' => $this->settings->get('gmaps_min_reviews', '50'),
             'searches'   => $this->settings->get('gmaps_searches', implode("\n", $this->defaultSearches())),
@@ -28,7 +31,10 @@ class GoogleMapsImport extends Controller
 
     public function save()
     {
-        $this->settings->put('gmaps_api_key',     $this->request->getPost('api_key'));
+        $key = trim((string) $this->request->getPost('api_key'));
+        if ($key !== '') { // campo vazio = manter a chave atual
+            $this->settings->put('gmaps_api_key', $key);
+        }
         $this->settings->put('gmaps_min_rating',  $this->request->getPost('min_rating'));
         $this->settings->put('gmaps_min_reviews', $this->request->getPost('min_reviews'));
         $this->settings->put('gmaps_searches',    trim($this->request->getPost('searches')));
@@ -38,7 +44,7 @@ class GoogleMapsImport extends Controller
 
     public function run(): void
     {
-        $apiKey     = $this->settings->get('gmaps_api_key', '');
+        $apiKey     = $this->settings->secret('gmaps_api_key', 'GMAPS_API_KEY');
         $minRating  = (float) $this->settings->get('gmaps_min_rating', 4.0);
         $minReviews = (int)   $this->settings->get('gmaps_min_reviews', 50);
         $rawSearches = $this->settings->get('gmaps_searches', '');
@@ -57,115 +63,76 @@ class GoogleMapsImport extends Controller
             flush();
         };
 
+        $emptySkips = ['com_site' => 0, 'rating_baixo' => 0, 'poucos_reviews' => 0, 'sem_telefone' => 0, 'duplicado' => 0];
+
         if (! $apiKey) {
             $send('error', ['message' => 'API Key não configurada. Salve as configurações primeiro.']);
-            $send('done', ['imported' => 0, 'skipped' => ['com_site' => 0, 'rating_baixo' => 0, 'poucos_reviews' => 0, 'sem_telefone' => 0, 'duplicado' => 0]]);
+            $send('done', ['imported' => 0, 'skipped' => $emptySkips]);
             exit;
         }
 
-        $db            = \Config\Database::connect();
+        $places        = new PlacesClient($apiKey);
         $prospectModel = new ProspectModel();
         $imported      = 0;
-        $skipped       = ['com_site' => 0, 'rating_baixo' => 0, 'poucos_reviews' => 0, 'sem_telefone' => 0, 'duplicado' => 0];
+        $skipped       = $emptySkips;
         $seenPlaceIds  = [];
 
+        // Termos do Google: só o place_id é gravado. Nota/telefone/site são usados aqui apenas
+        // para filtrar e descartados; nome e telefone voltam a ser buscados ao vivo na fila.
         foreach ($searches as $query) {
             $send('search', ['query' => $query]);
 
-            $candidates = $this->textSearch($query, $apiKey);
+            $candidates = [];
+            $token      = null;
+            try {
+                for ($page = 0; $page < 3; $page++) { // a API devolve no máximo 60 resultados por busca
+                    $res        = $places->searchText($query, $token);
+                    $candidates = array_merge($candidates, $res['places']);
+                    $token      = $res['nextPageToken'];
+                    if (! $token) break;
+                    usleep(300000);
+                }
+            } catch (\RuntimeException $e) {
+                $send('error', ['message' => $e->getMessage()]);
+                continue;
+            }
             $send('count', ['count' => count($candidates)]);
 
             foreach ($candidates as $place) {
-                $placeId = $place['place_id'] ?? '';
+                $placeId = $place['id'] ?? '';
                 if (! $placeId || isset($seenPlaceIds[$placeId])) continue;
                 $seenPlaceIds[$placeId] = true;
 
                 $rating  = (float) ($place['rating'] ?? 0);
-                $reviews = (int)   ($place['user_ratings_total'] ?? 0);
+                $reviews = (int)   ($place['userRatingCount'] ?? 0);
 
-                if ($rating  < $minRating)  { $skipped['rating_baixo']++;  continue; }
+                if ($rating  < $minRating)  { $skipped['rating_baixo']++;   continue; }
                 if ($reviews < $minReviews) { $skipped['poucos_reviews']++; continue; }
+                if (! empty($place['websiteUri'])) { $skipped['com_site']++; continue; }
+                if (trim($place['nationalPhoneNumber'] ?? '') === '') { $skipped['sem_telefone']++; continue; }
 
-                usleep(100000);
-                $details = $this->placeDetails($placeId, $apiKey);
+                if ($prospectModel->where('google_place_id', $placeId)->countAllResults() > 0) {
+                    $skipped['duplicado']++;
+                    continue;
+                }
 
-                if (! empty($details['website'])) { $skipped['com_site']++; continue; }
-
-                $phone = trim($details['formatted_phone_number'] ?? '');
-                if (! $phone) { $skipped['sem_telefone']++; continue; }
-
-                $name    = $details['name'] ?? ($place['name'] ?? '');
-                $mapsUrl = $details['url'] ?? '';
-
-                $exists = $db->query(
-                    'SELECT 1 FROM prospects WHERE phone = ? OR LOWER(name) = LOWER(?) LIMIT 1',
-                    [$phone, $name]
-                )->getNumRows() > 0;
-
-                if ($exists) { $skipped['duplicado']++; continue; }
-
+                $label = 'Lead Google Maps …' . substr($placeId, -6);
                 $prospectModel->insert([
-                    'name'          => $name,
-                    'phone'         => $phone,
-                    'interest'      => 'site',
-                    'source'        => 'google_maps',
-                    'status'        => 'new',
-                    'rating'        => $rating,
-                    'reviews_count' => $reviews,
-                    'maps_url'      => $mapsUrl,
+                    'name'            => $label,
+                    'interest'        => 'site',
+                    'source'          => 'google_maps',
+                    'status'          => 'new',
+                    'google_place_id' => $placeId,
+                    'contact_source'  => ProspectModel::SOURCE_GOOGLE_MAPS,
                 ]);
 
                 $imported++;
-                $send('imported', ['name' => $name, 'rating' => $rating, 'reviews' => $reviews]);
+                $send('imported', ['name' => $label, 'rating' => $rating, 'reviews' => $reviews]);
             }
         }
 
         $send('done', ['imported' => $imported, 'skipped' => $skipped]);
         exit;
-    }
-
-    // ── Google Places API ─────────────────────────────────────────────────────
-
-    private function textSearch(string $query, string $apiKey): array
-    {
-        $results = [];
-        $url     = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
-        $params  = ['query' => $query, 'language' => 'pt-BR', 'key' => $apiKey];
-
-        while (true) {
-            $resp    = $this->httpGet($url, $params);
-            $results = array_merge($results, $resp['results'] ?? []);
-
-            $token = $resp['next_page_token'] ?? null;
-            if (! $token) break;
-
-            sleep(2);
-            $params = ['pagetoken' => $token, 'key' => $apiKey];
-        }
-
-        return $results;
-    }
-
-    private function placeDetails(string $placeId, string $apiKey): array
-    {
-        $resp = $this->httpGet(
-            'https://maps.googleapis.com/maps/api/place/details/json',
-            [
-                'place_id' => $placeId,
-                'fields'   => 'name,formatted_phone_number,website,url',
-                'language' => 'pt-BR',
-                'key'      => $apiKey,
-            ]
-        );
-        return $resp['result'] ?? [];
-    }
-
-    private function httpGet(string $url, array $params): array
-    {
-        $fullUrl = $url . '?' . http_build_query($params);
-        $context = stream_context_create(['http' => ['timeout' => 15]]);
-        $body    = @file_get_contents($fullUrl, false, $context);
-        return $body ? (json_decode($body, true) ?? []) : [];
     }
 
     private function defaultSearches(): array

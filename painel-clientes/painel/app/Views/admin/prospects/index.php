@@ -23,7 +23,7 @@ $statusBadge = [
     'whatsapp_followup'  => 'success',
 ];
 $interestLabel = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
-$sourceLabel   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];
+$sourceLabel   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps', 'cnpj' => 'Base CNPJ (Receita)'];
 
 $total = array_sum($statusCounts);
 ?>

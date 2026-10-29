@@ -65,6 +65,11 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('team/(:num)/update',              'Admin\Team::update/$1');
     $routes->post('team/(:num)/delete',              'Admin\Team::delete/$1');
 
+    $routes->get('cnpj-import',                      'Admin\CnpjImport::index');
+    $routes->post('cnpj-import/save',                'Admin\CnpjImport::save');
+    $routes->post('cnpj-import/run',                 'Admin\CnpjImport::run');
+    $routes->get('cnpj-import/status',               'Admin\CnpjImport::status');
+    $routes->post('cnpj-import/stop',                'Admin\CnpjImport::stop');
     $routes->get('google-maps-import',               'Admin\GoogleMapsImport::index');
     $routes->post('google-maps-import/save',         'Admin\GoogleMapsImport::save');
     $routes->get('google-maps-import/run',           'Admin\GoogleMapsImport::run');
@@ -90,6 +95,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('prospects/(:num)',               'Admin\Prospects::update/$1');
     $routes->post('prospects/(:num)/status',        'Admin\Prospects::updateStatus/$1');
     $routes->post('prospects/(:num)/queue-action',  'Admin\Prospects::queueAction/$1');
+    $routes->post('prospects/(:num)/opt-out',       'Admin\Prospects::optOut/$1');
+    $routes->post('prospects/(:num)/release-contact', 'Admin\Prospects::releaseContact/$1');
     $routes->post('prospects/(:num)/delete',        'Admin\Prospects::delete/$1');
     $routes->post('prospects/(:num)/convert',       'Admin\Prospects::convertToClient/$1');
 });

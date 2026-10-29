@@ -25,7 +25,7 @@ $statusBadge = [
     'whatsapp_followup'  => 'success',
 ];
 $interestOpts = ['site' => 'Site', 'app' => 'Aplicativo', 'system' => 'Sistema', 'other' => 'Outro'];
-$sourceOpts   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps'];
+$sourceOpts   = ['website' => 'Site', 'referral' => 'Indicação', 'social' => 'Redes sociais', 'email' => 'E-mail', 'other' => 'Outro', 'google_maps' => 'Google Maps', 'cnpj' => 'Base CNPJ (Receita)'];
 
 $action = $isNew ? '/admin/prospects' : "/admin/prospects/{$prospect['id']}";
 $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
@@ -275,6 +275,35 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
         </div>
 
         <!-- Ações -->
+        <?php if (! empty($prospect['google_place_id'])): ?>
+        <div class="card mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-geo-alt me-1"></i> Dados do Google Maps</div>
+            <div class="card-body small">
+                <?php if (! empty($live)): ?>
+                    <div class="fw-semibold fs-6"><?= esc($live['name']) ?></div>
+                    <div><?= esc($live['phone'] ?? 'sem telefone') ?></div>
+                    <?php if (! empty($live['rating'])): ?>
+                    <div>⭐ <?= esc(number_format((float) $live['rating'], 1, ',', '')) ?> · <?= esc((string) ($live['reviews_count'] ?? 0)) ?> avaliações</div>
+                    <?php endif ?>
+                    <a href="<?= esc($live['maps_url']) ?>" target="_blank" rel="noopener">Ver no Google Maps</a>
+                    <div class="text-muted mt-2">Dados ao vivo do Google Maps: não ficam salvos no painel (termos do Google).</div>
+                    <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/release-contact" class="mt-2">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-outline-primary w-100"
+                                onclick="return confirm('Salvar nome e telefone na ficha? Faça isso depois que a pessoa responder.')">
+                            <i class="bi bi-person-plus me-1"></i> Salvar contato (a pessoa respondeu)
+                        </button>
+                    </form>
+                <?php elseif (! empty($liveError)): ?>
+                    <div class="text-warning"><?= esc($liveError) ?></div>
+                <?php else: ?>
+                    <div class="text-muted">Contato já salvo na ficha em <?= ! empty($prospect['places_released_at']) ? esc(date('d/m/Y', strtotime($prospect['places_released_at']))) : '—' ?>.</div>
+                    <a href="<?= esc(\App\Libraries\PlacesClient::mapsUrl($prospect['google_place_id'])) ?>" target="_blank" rel="noopener">Ver no Google Maps</a>
+                <?php endif ?>
+            </div>
+        </div>
+        <?php endif ?>
+
         <div class="card">
             <div class="card-header fw-semibold">Ações</div>
             <div class="card-body d-flex flex-column gap-2">
@@ -292,6 +321,27 @@ $title  = $isNew ? 'Novo Prospecto' : esc($prospect['name']);
                     <i class="bi bi-check-circle me-1"></i> Prospecto convertido em cliente.
                 </div>
                 <?php endif ?>
+
+                <?php if (! empty($prospect['opt_out_at'])): ?>
+                <div class="alert alert-dark py-2 mb-0 small">
+                    <i class="bi bi-slash-circle me-1"></i> Não contatar desde <?= esc(date('d/m/Y H:i', strtotime($prospect['opt_out_at']))) ?>.
+                </div>
+                <?php else: ?>
+                <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/opt-out">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-outline-dark w-100"
+                            onclick="return confirm('Marcar como NÃO CONTATAR? Ele sai de todas as filas de abordagem.')">
+                        <i class="bi bi-slash-circle me-1"></i> Não contatar (opt-out)
+                    </button>
+                </form>
+                <?php endif ?>
+
+                <div class="small text-muted border-top pt-2">
+                    <div><strong>Base legal:</strong> <?= esc($prospect['legal_basis'] ?? '—') ?></div>
+                    <div><strong>Origem:</strong> <?= esc($prospect['contact_source'] ?? '—') ?></div>
+                    <div><strong>1º contato:</strong> <?= ! empty($prospect['first_contact_at']) ? esc(date('d/m/Y H:i', strtotime($prospect['first_contact_at']))) : '—' ?></div>
+                    <div><strong>Excluir após:</strong> <?= ! empty($prospect['delete_after']) ? esc(date('d/m/Y', strtotime($prospect['delete_after']))) : '—' ?></div>
+                </div>
 
                 <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/delete">
                     <?= csrf_field() ?>

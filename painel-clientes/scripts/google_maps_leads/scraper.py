@@ -22,11 +22,11 @@ import psycopg2
 GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
 
 DB_CONFIG = dict(
-    host     = 'localhost',
-    port     = 5433,          # porta externa do container PostgreSQL
-    dbname   = 'painel_clientes',
-    user     = 'painel_user',
-    password = 'painel_pass',
+    host     = os.environ.get('DB_HOST', 'localhost'),
+    port     = int(os.environ.get('DB_PORT', '5433')),   # porta externa do container PostgreSQL
+    dbname   = os.environ.get('DB_NAME', 'painel_clientes'),
+    user     = os.environ.get('DB_USER', 'painel_user'),
+    password = os.environ['DB_PASS'],                    # obrigatória: defina DB_PASS no ambiente
 )
 
 MIN_RATING  = 4.0
@@ -61,7 +61,13 @@ SEARCHES = [
 
 # =============================================================================
 
-PLACES_URL = 'https://maps.googleapis.com/maps/api/place'
+PLACES_URL = 'https://places.googleapis.com/v1/places:searchText'
+
+# Termos do Google Maps Platform: só o place_id pode ser armazenado sem prazo.
+# Nota, telefone e site são usados apenas para FILTRAR e descartados; o painel busca
+# nome/telefone ao vivo (por place_id) quando o lead é exibido.
+FIELD_MASK = ('places.id,places.rating,places.userRatingCount,'
+              'places.websiteUri,places.nationalPhoneNumber,nextPageToken')
 
 logging.basicConfig(
     level   = logging.INFO,
@@ -71,69 +77,47 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
-# ── Google Places API ─────────────────────────────────────────────────────────
+# ── Google Places API (New) ───────────────────────────────────────────────────
 
 def text_search(query: str) -> list:
-    """Busca no Google Maps com paginação automática (até 60 resultados)."""
+    """Busca no Google Maps com paginação (até 60 resultados)."""
     results = []
-    params  = {'query': query, 'language': 'pt-BR', 'key': GOOGLE_API_KEY}
-    url     = f'{PLACES_URL}/textsearch/json'
+    body    = {'textQuery': query, 'languageCode': 'pt-BR', 'regionCode': 'BR', 'pageSize': 20}
+    headers = {'X-Goog-Api-Key': GOOGLE_API_KEY, 'X-Goog-FieldMask': FIELD_MASK}
 
-    while True:
-        resp = requests.get(url, params=params, timeout=10).json()
-        if resp.get('status') != 'OK' and not results:
-            log.warning(f'  API status: {resp.get("status")} — {resp.get("error_message", "")}')
-        results.extend(resp.get('results', []))
+    for _ in range(3):
+        resp = requests.post(PLACES_URL, json=body, headers=headers, timeout=15)
+        data = resp.json()
+        if resp.status_code >= 400:
+            log.warning(f'  API {resp.status_code}: {data.get("error", {}).get("message", "")}')
+            break
+        results.extend(data.get('places', []))
 
-        token = resp.get('next_page_token')
+        token = data.get('nextPageToken')
         if not token:
             break
-
-        time.sleep(2)  # Google exige ~2s antes de usar o next_page_token
-        params = {'pagetoken': token, 'key': GOOGLE_API_KEY}
+        body['pageToken'] = token
+        time.sleep(0.3)
 
     return results
 
 
-def place_details(place_id: str) -> dict:
-    """Busca detalhes completos: telefone, website e URL do Maps."""
-    resp = requests.get(
-        f'{PLACES_URL}/details/json',
-        params={
-            'place_id': place_id,
-            'fields'  : 'name,formatted_phone_number,website,url',
-            'language': 'pt-BR',
-            'key'     : GOOGLE_API_KEY,
-        },
-        timeout=10,
-    ).json()
-    return resp.get('result', {})
-
-
 # ── PostgreSQL ────────────────────────────────────────────────────────────────
 
-def already_exists(cur, name: str, phone: str) -> bool:
-    """Evita duplicatas verificando telefone (exato) e nome (case-insensitive)."""
-    if phone:
-        cur.execute("SELECT 1 FROM prospects WHERE phone = %s LIMIT 1", (phone,))
-        if cur.fetchone():
-            return True
-    cur.execute(
-        "SELECT 1 FROM prospects WHERE LOWER(name) = LOWER(%s) LIMIT 1",
-        (name,)
-    )
+def already_exists(cur, place_id: str) -> bool:
+    cur.execute("SELECT 1 FROM prospects WHERE google_place_id = %s LIMIT 1", (place_id,))
     return bool(cur.fetchone())
 
 
-def insert_prospect(cur, name, phone, rating, reviews, maps_url):
+def insert_prospect(cur, place_id: str):
     cur.execute("""
         INSERT INTO prospects
-            (name, phone, interest, source, status,
-             rating, reviews_count, maps_url, created_at, updated_at)
+            (name, interest, source, status, google_place_id,
+             contact_source, created_at, updated_at)
         VALUES
-            (%s, %s, 'site', 'google_maps', 'new',
-             %s, %s, %s, NOW(), NOW())
-    """, (name, phone, rating, reviews, maps_url))
+            (%s, 'site', 'google_maps', 'new', %s,
+             'Google Maps (dados públicos do estabelecimento)', NOW(), NOW())
+    """, ('Lead Google Maps …' + place_id[-6:], place_id))
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -151,7 +135,7 @@ def run():
         'duplicado'     : 0,
     }
 
-    seen_place_ids = set()  # evita buscar detalhes do mesmo lugar duas vezes
+    seen_place_ids = set()
 
     for query in SEARCHES:
         log.info(f'Buscando: {query}')
@@ -159,40 +143,31 @@ def run():
         log.info(f'  {len(candidates)} resultados brutos')
 
         for place in candidates:
-            place_id = place.get('place_id', '')
-            if place_id in seen_place_ids:
+            place_id = place.get('id', '')
+            if not place_id or place_id in seen_place_ids:
                 continue
             seen_place_ids.add(place_id)
 
             rating  = float(place.get('rating') or 0)
-            reviews = int(place.get('user_ratings_total') or 0)
+            reviews = int(place.get('userRatingCount') or 0)
 
-            if rating  < MIN_RATING:  skipped['rating_baixo']    += 1; continue
-            if reviews < MIN_REVIEWS: skipped['poucos_reviews']   += 1; continue
-
-            time.sleep(0.1)  # respeita rate limit da API
-            details = place_details(place_id)
-
-            if details.get('website'):
+            if rating  < MIN_RATING:  skipped['rating_baixo']  += 1; continue
+            if reviews < MIN_REVIEWS: skipped['poucos_reviews'] += 1; continue
+            if place.get('websiteUri'):
                 skipped['com_site'] += 1
                 continue
-
-            phone = (details.get('formatted_phone_number') or '').strip()
-            if not phone:
+            if not (place.get('nationalPhoneNumber') or '').strip():
                 skipped['sem_telefone'] += 1
                 continue
 
-            name     = details.get('name') or place.get('name', '')
-            maps_url = details.get('url', '')
-
-            if already_exists(cur, name, phone):
+            if already_exists(cur, place_id):
                 skipped['duplicado'] += 1
                 continue
 
-            insert_prospect(cur, name, phone, rating, reviews, maps_url)
+            insert_prospect(cur, place_id)
             conn.commit()
             imported += 1
-            log.info(f'  ✓  {name}  ({rating}⭐  {reviews:,} avaliações)')
+            log.info(f'  ✓  …{place_id[-6:]}  ({rating}⭐  {reviews:,} avaliações)')
 
     cur.close()
     conn.close()

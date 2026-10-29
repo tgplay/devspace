@@ -143,16 +143,39 @@ CREATE TABLE prospects (
     interest      VARCHAR(30)       NOT NULL DEFAULT 'other'
                     CHECK (interest IN ('site', 'app', 'system', 'other')),
     source        VARCHAR(30)       NOT NULL DEFAULT 'website'
-                    CHECK (source IN ('website', 'referral', 'social', 'email', 'other', 'google_maps')),
+                    CHECK (source IN ('website', 'referral', 'social', 'email', 'other', 'google_maps', 'cnpj')),
     status        VARCHAR(30)       NOT NULL DEFAULT 'new'
-                    CHECK (status IN ('new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost')),
+                    CHECK (status IN ('new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost', 'phone_followup', 'whatsapp_followup')),
     notes         TEXT,
     rating        NUMERIC(2,1),
     reviews_count INTEGER,
     maps_url      VARCHAR(500),
+    -- Conformidade LGPD (ver db/migrate_prospects_compliance.sql)
+    opt_out_at       TIMESTAMP,
+    legal_basis      VARCHAR(40)  NOT NULL DEFAULT 'legitimate_interest'
+                       CHECK (legal_basis IN ('legitimate_interest', 'consent', 'contract_preparation')),
+    contact_source   VARCHAR(255),
+    first_contact_at TIMESTAMP,
+    delete_after     DATE         DEFAULT (CURRENT_DATE + 365),
+    -- Google Places: só o place_id é armazenado (ver db/migrate_prospects_places.sql)
+    google_place_id    VARCHAR(255),
+    cnpj               VARCHAR(14),   -- importação pela base aberta de CNPJ (migrate_prospects_cnpj.sql)
+    places_released_at TIMESTAMP,
+    -- Follow-up (ver db/migrate_prospect_calls.sql e db/migrate_whatsapp_followup.sql)
+    phone_followup_at    TIMESTAMP,
+    whatsapp_followup_at TIMESTAMP,
     created_at    TIMESTAMP         NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP         NOT NULL DEFAULT NOW()
 );
+
+-- Histórico de ligações por prospecto
+CREATE TABLE prospect_calls (
+    id          SERIAL PRIMARY KEY,
+    prospect_id INTEGER   NOT NULL REFERENCES prospects(id) ON DELETE CASCADE,
+    notes       TEXT,
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_prospect_calls_prospect ON prospect_calls(prospect_id);
 
 -- ============================================================
 -- Modelos de contrato
@@ -198,6 +221,8 @@ CREATE INDEX idx_documents_client   ON documents(client_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_prospects_status   ON prospects(status);
 CREATE INDEX idx_prospects_created  ON prospects(created_at);
+CREATE UNIQUE INDEX uq_prospects_cnpj ON prospects(cnpj) WHERE cnpj IS NOT NULL;
+CREATE UNIQUE INDEX uq_prospects_google_place_id ON prospects(google_place_id) WHERE google_place_id IS NOT NULL;
 CREATE INDEX idx_contracts_client   ON contracts(client_id);
 CREATE INDEX idx_contracts_status   ON contracts(status);
 

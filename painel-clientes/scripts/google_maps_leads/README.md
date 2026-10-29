@@ -38,7 +38,7 @@ Estabelecimento com muitas avaliações tem movimento, ou seja, tem dinheiro par
 1. Acesse o [Google Cloud Console](https://console.cloud.google.com)
 2. Crie um projeto novo (pode chamar de "Captação de Leads")
 3. No menu lateral: **APIs e serviços → Biblioteca**
-4. Busque por **Places API** e clique em **Ativar**
+4. Busque por **Places API (New)** e clique em **Ativar** (a API legada não é mais usada)
 5. Vá em **APIs e serviços → Credenciais → Criar credencial → Chave de API**
 6. Copie a chave gerada (começa com `AIza...`)
 

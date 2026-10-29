@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Libraries\GroqMessageGenerator;
+use App\Libraries\PlacesClient;
 use App\Models\ProspectCallModel;
 use App\Models\ProspectModel;
 use App\Models\SettingModel;
@@ -11,6 +12,38 @@ use CodeIgniter\Controller;
 
 class Prospects extends Controller
 {
+    /** Rodapé obrigatório em toda abordagem fria: identifica a origem e oferece descadastro simples. */
+    public const OPT_OUT_FOOTER = 'Se preferir não receber mais mensagens nossas, é só responder SAIR.';
+
+    private const DEFAULT_WA_DAILY_LIMIT = 20;
+
+    /** Limite diário de abordagens por WhatsApp (0 = sem limite). Reduz risco de banimento do número. */
+    private function waDailyLimit(): int
+    {
+        return max(0, (int) (new SettingModel())->get('whatsapp_daily_limit', self::DEFAULT_WA_DAILY_LIMIT));
+    }
+
+    /** Nome (e sobrenome) de quem está logado, como cadastrado no perfil. Usado na assinatura das abordagens. */
+    public static function senderName(): string
+    {
+        $name = trim(preg_replace('/\s+/', ' ', (string) session()->get('user_name')));
+
+        return $name !== '' ? $name : 'Eu';
+    }
+
+    /** Nome genérico (ex.: "Administrador") ou só um nome sem sobrenome: vale avisar para completar no perfil. */
+    public static function senderNameIsWeak(): bool
+    {
+        $name = mb_strtolower(self::senderName());
+
+        return in_array($name, ['eu', 'admin', 'administrador', 'administrator'], true) || ! str_contains($name, ' ');
+    }
+
+    private function waSentToday(): int
+    {
+        return (new ProspectModel())->where('whatsapp_followup_at >=', date('Y-m-d 00:00:00'))->countAllResults();
+    }
+
     private const VALID_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost', 'phone_followup', 'whatsapp_followup'];
 
     public function index(): string
@@ -76,7 +109,15 @@ class Prospects extends Controller
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        return view('admin/prospects/show', ['prospect' => $prospect, 'calls' => $calls]);
+        $liveError = null;
+        $live      = $this->withLiveData($prospect, $liveError);
+
+        return view('admin/prospects/show', [
+            'prospect'  => $prospect,
+            'calls'     => $calls,
+            'live'      => ! empty($live['_live']) ? $live : null,
+            'liveError' => $liveError,
+        ]);
     }
 
     public function update(int $id)
@@ -112,6 +153,13 @@ class Prospects extends Controller
         $prospect = (new ProspectModel())->find($id);
         if (! $prospect) {
             return $this->response->setJSON(['success' => false, 'message' => 'Prospecto não encontrado.']);
+        }
+
+        if (! empty($prospect['opt_out_at']) && $status !== 'lost') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Este contato pediu para não ser contatado (opt-out). Só é possível mantê-lo como perdido.',
+            ]);
         }
 
         (new ProspectModel())->update($id, ['status' => $status]);
@@ -168,6 +216,7 @@ class Prospects extends Controller
         $model   = new ProspectModel();
 
         $query = $model->where('status', 'new')
+                       ->where('opt_out_at', null)
                        ->orderBy('reviews_count', 'DESC')
                        ->orderBy('created_at', 'ASC');
 
@@ -176,12 +225,17 @@ class Prospects extends Controller
         }
 
         $prospect  = $query->first();
-        $total     = (new ProspectModel())->where('status', 'new')->countAllResults();
+        $liveError = null;
+        $prospect  = $this->withLiveData($prospect, $liveError);
+        $total     = (new ProspectModel())->where('status', 'new')->where('opt_out_at', null)->countAllResults();
 
         return view('admin/prospects/queue', [
             'prospect' => $prospect,
             'total'    => $total,
             'skipped'  => count($skipped),
+            'liveError' => $liveError,
+            'waLimit'   => $this->waDailyLimit(),
+            'waSent'    => $this->waSentToday(),
         ]);
     }
 
@@ -197,18 +251,37 @@ class Prospects extends Controller
             session()->set('queue_skipped', $skipped);
         };
 
+        $current = (new ProspectModel())->find($id);
+        if ($current && ! empty($current['opt_out_at']) && $action !== 'opt_out') {
+            return redirect()->to('/admin/prospects/queue')->with('error', 'Este contato pediu para não ser contatado.');
+        }
+        $firstContact = ($current && empty($current['first_contact_at'])) ? date('Y-m-d H:i:s') : null;
+
         if ($action === 'contacted') {
-            (new ProspectModel())->update($id, [
+            $limit = $this->waDailyLimit();
+            if ($limit > 0 && $this->waSentToday() >= $limit) {
+                return redirect()->to('/admin/prospects/queue')
+                    ->with('error', "Limite diário de {$limit} abordagens por WhatsApp atingido. Continue amanhã ou ajuste o limite em Configurações de IA.");
+            }
+            $data = [
                 'status'                => 'whatsapp_followup',
                 'whatsapp_followup_at'  => date('Y-m-d H:i:s'),
-            ]);
+            ];
+            if ($firstContact) { $data['first_contact_at'] = $firstContact; }
+            (new ProspectModel())->update($id, $data);
             $removeFromSkipped($id);
 
         } elseif ($action === 'no_whatsapp') {
-            (new ProspectModel())->update($id, [
+            $data = [
                 'status'             => 'phone_followup',
                 'phone_followup_at'  => date('Y-m-d H:i:s'),
-            ]);
+            ];
+            if ($firstContact) { $data['first_contact_at'] = $firstContact; }
+            (new ProspectModel())->update($id, $data);
+            $removeFromSkipped($id);
+
+        } elseif ($action === 'opt_out') {
+            $this->applyOptOut($id);
             $removeFromSkipped($id);
 
         } elseif ($action === 'disqualify') {
@@ -221,6 +294,89 @@ class Prospects extends Controller
         }
 
         return redirect()->to('/admin/prospects/queue');
+    }
+
+    /**
+     * Leads do Google Maps guardam só o place_id (termos do Google). Nome, telefone, nota e link
+     * vêm da API na hora de exibir e NÃO são gravados. Retorna o prospecto com os dados ao vivo
+     * mesclados em memória (flag `_live`); em caso de falha, `$error` explica o motivo.
+     */
+    private function withLiveData(?array $prospect, ?string &$error = null): ?array
+    {
+        if (! $prospect || ! ProspectModel::isLivePlace($prospect)) {
+            return $prospect;
+        }
+
+        $apiKey = (new SettingModel())->secret('gmaps_api_key', 'GMAPS_API_KEY');
+        try {
+            $d = (new PlacesClient($apiKey))->details($prospect['google_place_id']);
+        } catch (\RuntimeException $e) {
+            $error = $e->getMessage();
+            return $prospect;
+        }
+
+        if ($d === null) {
+            $error = 'Este lugar não existe mais no Google Maps. Descarte o lead.';
+            return $prospect;
+        }
+
+        $prospect['name']          = $d['displayName']['text'] ?? $prospect['name'];
+        $prospect['phone']         = $d['nationalPhoneNumber'] ?? null;
+        $prospect['rating']        = $d['rating'] ?? null;
+        $prospect['reviews_count'] = $d['userRatingCount'] ?? null;
+        $prospect['maps_url']      = $d['googleMapsUri'] ?? PlacesClient::mapsUrl($prospect['google_place_id']);
+        $prospect['_live']         = true;
+
+        return $prospect;
+    }
+
+    /** "Salvar contato": a pessoa respondeu; nome e telefone passam a ser dados do seu relacionamento. */
+    public function releaseContact(int $id)
+    {
+        $prospect = (new ProspectModel())->find($id);
+        if (! $prospect || ! ProspectModel::isLivePlace($prospect)) {
+            return redirect()->back()->with('error', 'Nada a salvar para este prospecto.');
+        }
+
+        $live = $this->withLiveData($prospect, $error);
+        if (empty($live['_live'])) {
+            return redirect()->back()->with('error', $error ?: 'Não foi possível buscar os dados no Google.');
+        }
+
+        (new ProspectModel())->update($id, [
+            'name'               => $live['name'],
+            'phone'              => $live['phone'],
+            'places_released_at' => date('Y-m-d H:i:s'),
+            'notes'              => trim(($prospect['notes'] ?? '') . "\n\n[" . date('d/m/Y H:i') . '] Contato salvo após resposta do lead (dados do Google Maps deixam de ser consultados).'),
+        ]);
+
+        return redirect()->back()->with('success', 'Nome e telefone salvos na ficha.');
+    }
+
+    /** Botão "Não contatar" na ficha do prospecto. */
+    public function optOut(int $id)
+    {
+        if (! (new ProspectModel())->find($id)) {
+            return redirect()->to('/admin/prospects')->with('error', 'Prospecto não encontrado.');
+        }
+        $this->applyOptOut($id);
+
+        return redirect()->back()->with('success', 'Contato marcado como "não contatar". Ele não aparecerá mais nas filas de abordagem.');
+    }
+
+    /** Marca opt-out: registra data, encerra o funil como perdido e mantém o telefone na lista de supressão. */
+    private function applyOptOut(int $id): void
+    {
+        $prospect = (new ProspectModel())->find($id);
+        if (! $prospect) {
+            return;
+        }
+        $stamp = date('d/m/Y H:i');
+        (new ProspectModel())->update($id, [
+            'opt_out_at' => $prospect['opt_out_at'] ?: date('Y-m-d H:i:s'),
+            'status'     => 'lost',
+            'notes'      => trim(($prospect['notes'] ?? '') . "\n\n[{$stamp}] Pediu para não ser contatado (opt-out)."),
+        ]);
     }
 
     public function queueClearSkips()
@@ -236,13 +392,21 @@ class Prospects extends Controller
             return $this->response->setJSON(['success' => false, 'error' => 'Prospecto não encontrado.']);
         }
 
-        $apiKey    = (new SettingModel())->get('groq_api_key', '');
-        $adminName = trim(session()->get('user_name') ?? 'Eu');
+        $prospect = $this->withLiveData($prospect, $liveError);
+        if (ProspectModel::isLivePlace($prospect) && empty($prospect['_live'])) {
+            return $this->response->setJSON(['success' => false, 'error' => $liveError ?: 'Não foi possível buscar os dados do lead no Google.']);
+        }
+
+        $apiKey    = (new SettingModel())->secret('groq_api_key', 'GROQ_API_KEY');
+        $adminName = self::senderName();
         $saudacao  = $this->request->getPost('saudacao') ?: 'boa tarde';
 
         try {
             $generator = new GroqMessageGenerator($apiKey);
             $message   = $generator->generate($prospect, $adminName, $saudacao);
+            if (stripos($message, 'SAIR') === false) {
+                $message .= "\n\n" . self::OPT_OUT_FOOTER;
+            }
 
             return $this->response->setJSON(['success' => true, 'message' => $message]);
         } catch (\RuntimeException $e) {
@@ -475,6 +639,7 @@ class Prospects extends Controller
                 'rating'        => $rating > 0 ? $rating : null,
                 'reviews_count' => $reviews > 0 ? $reviews : null,
                 'maps_url'      => $mapsUrl ?: null,
+                'contact_source' => ProspectModel::SOURCE_GOOGLE_MAPS,
             ]);
             $imported++;
         }

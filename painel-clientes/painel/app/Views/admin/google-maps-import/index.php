@@ -20,8 +20,12 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">API Key do Google</label>
-                        <input type="text" name="api_key" class="form-control font-monospace"
-                               value="<?= esc($apiKey) ?>" placeholder="AIza...">
+                        <input type="password" name="api_key" class="form-control font-monospace" autocomplete="new-password"
+                               value="" <?= $fromEnv ? 'disabled' : '' ?>
+                               placeholder="<?= $apiKeyHint ? esc($apiKeyHint) . ' (deixe vazio para manter)' : 'AIza...' ?>">
+                        <?php if ($fromEnv): ?>
+                        <div class="form-text text-success">Chave definida pela variável de ambiente GMAPS_API_KEY.</div>
+                        <?php endif ?>
                         <div class="form-text">
                             Google Cloud Console → Credenciais → Places API
                             <?php if (! $apiKey): ?>

@@ -13,6 +13,7 @@
         .main-content { flex: 1; padding: 30px; background: #f8f9fa; min-height: 100vh; }
         .sidebar .nav-label { font-size: 0.7rem; color: #6c757d; padding: 16px 20px 4px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
+    <?= view('layouts/_csrf') ?>
 </head>
 <body>
 <div class="d-flex">
@@ -48,9 +49,13 @@
             <a href="/admin/prospects/archive" class="<?= str_starts_with(uri_string(), 'admin/prospects/archive') ? 'active' : '' ?>">
                 <i class="bi bi-archive me-2"></i> Arquivo
             </a>
+            <a href="/admin/cnpj-import" class="<?= str_starts_with(uri_string(), 'admin/cnpj-import') ? 'active' : '' ?>">
+                <i class="bi bi-building me-2"></i> Captação CNPJ
+            </a>
+            <?php /* Captação Maps desativada (sem chave/faturamento do Google). Para reativar: descomente e configure GMAPS_API_KEY.
             <a href="/admin/google-maps-import" class="<?= str_starts_with(uri_string(), 'admin/google-maps-import') ? 'active' : '' ?>">
                 <i class="bi bi-geo-alt me-2"></i> Captação Maps
-            </a>
+            </a> */ ?>
             <a href="/admin/ai-settings" class="<?= str_starts_with(uri_string(), 'admin/ai-settings') ? 'active' : '' ?>">
                 <i class="bi bi-stars me-2"></i> Configurações de IA
             </a>

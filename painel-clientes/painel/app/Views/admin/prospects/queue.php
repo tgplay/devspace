@@ -3,6 +3,7 @@
 
 <?php
 $pending = $total - $skipped;
+$waLimitReached = ($waLimit ?? 0) > 0 && ($waSent ?? 0) >= $waLimit;
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -30,8 +31,28 @@ $pending = $total - $skipped;
 </div>
 
 <?php
-$adminName = trim(session()->get('user_name') ?? 'Eu');
+$adminName = \App\Controllers\Admin\Prospects::senderName();
 ?>
+
+<?php if (\App\Controllers\Admin\Prospects::senderNameIsWeak()): ?>
+<div class="alert alert-warning py-2 small d-flex align-items-center gap-2">
+    <i class="bi bi-person-badge"></i>
+    <span>As mensagens saem assinadas como <strong><?= esc($adminName) ?></strong>. Para assinar com nome e sobrenome,
+        ajuste seu nome em <a href="/admin/profile">Administrador (perfil)</a>.</span>
+</div>
+<?php endif ?>
+
+<?php if (($waLimit ?? 0) > 0): ?>
+<div class="alert alert-<?= $waLimitReached ? 'danger' : 'light border' ?> py-2 small d-flex align-items-center gap-2">
+    <i class="bi bi-whatsapp"></i>
+    <span>
+        Abordagens por WhatsApp hoje: <strong><?= (int) $waSent ?> / <?= (int) $waLimit ?></strong>
+        <?php if ($waLimitReached): ?>
+        — limite diário atingido. Continue amanhã (limitar o volume protege seu número contra banimento).
+        <?php endif ?>
+    </span>
+</div>
+<?php endif ?>
 
 <?php if (! $prospect): ?>
 
@@ -70,17 +91,26 @@ if ($pReviews && $pRating) {
     $googleLine = "tem nota {$pRating} no Google — parabéns!";
 } elseif ($pReviews) {
     $googleLine = "tem {$pReviews} avaliações no Google — parabéns!";
-} else {
+} elseif (($prospect['source'] ?? '') === 'google_maps') {
     $googleLine = "tem uma ótima presença no Google!";
+} else {
+    // Lead de outra origem (ex.: base de CNPJ): não afirma nada sobre o Google
+    $googleLine = null;
 }
 
 // Placeholder substituído pelo JS: {{SAUDACAO}}
 // Sem emojis de propósito: o link wa.me (?text=...) corrompe alguns emojis
 // no pré-preenchimento do WhatsApp Web — copiar/colar funciona, o link não.
 $waMsg  = "Oi, {{SAUDACAO}}! Sou {$adminName}.\n\n";
-$waMsg .= "Vi que o {$pName} {$googleLine}\n\n";
+if ($googleLine !== null) {
+    $waMsg .= "Vi que o {$pName} {$googleLine}\n\n";
+} else {
+    $where  = ! empty($prospect['company']) ? " ({$prospect['company']})" : '';
+    $waMsg .= "Encontrei {$pName}{$where} pesquisando negócios da região.\n\n";
+}
 $waMsg .= "Percebi que vocês ainda não têm site próprio. Isso pode estar fazendo vocês perderem clientes que pesquisam no Google antes de decidir onde ir.\n\n";
-$waMsg .= "Posso te mostrar quantas pessoas buscam por vocês e não te encontram? Diagnóstico rápido, sem compromisso.";
+$waMsg .= "Posso te mostrar quantas pessoas buscam por vocês e não te encontram? Diagnóstico rápido, sem compromisso.\n\n";
+$waMsg .= \App\Controllers\Admin\Prospects::OPT_OUT_FOOTER;
 
 // Link gerado sem o placeholder — JS vai sobrescrever o href depois de montar a mensagem final
 $waLink = $waPhone ? '#wa-open' : null;
@@ -92,6 +122,10 @@ $waLink = $waPhone ? '#wa-open' : null;
         <!-- Card principal -->
         <div class="card shadow-sm border-0 mb-3">
             <div class="card-body p-4">
+
+                <?php if (! empty($liveError)): ?>
+                <div class="alert alert-warning py-2 small"><i class="bi bi-exclamation-triangle me-1"></i><?= esc($liveError) ?></div>
+                <?php endif ?>
 
                 <!-- Cabeçalho do lead -->
                 <div class="d-flex justify-content-between align-items-start mb-4">
@@ -113,6 +147,9 @@ $waLink = $waPhone ? '#wa-open' : null;
                                class="text-muted small text-decoration-none">
                                 <i class="bi bi-geo-alt-fill text-danger me-1"></i>Ver no Maps
                             </a>
+                            <?php endif ?>
+                            <?php if (! empty($prospect['_live'])): ?>
+                            <span class="text-muted small" title="Nome, telefone e nota são buscados ao vivo e não ficam salvos no painel">Dados: Google Maps</span>
                             <?php endif ?>
                         </div>
                     </div>
@@ -163,7 +200,8 @@ $waLink = $waPhone ? '#wa-open' : null;
                     <div class="col-12 col-sm-auto">
                         <a href="#" id="wa-btn" target="_blank" rel="noopener"
                            data-phone="55<?= esc($waPhone) ?>"
-                           class="btn btn-success w-100" style="min-width:180px">
+                           class="btn btn-success w-100 <?= $waLimitReached ? 'disabled' : '' ?>" style="min-width:180px"
+                           <?= $waLimitReached ? 'aria-disabled="true" onclick="return false"' : '' ?>>
                             <i class="bi bi-whatsapp me-2"></i>Abrir WhatsApp
                         </a>
                     </div>
@@ -192,7 +230,7 @@ $waLink = $waPhone ? '#wa-open' : null;
                         <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/queue-action">
                             <?= csrf_field() ?>
                             <input type="hidden" name="action" value="contacted">
-                            <button type="submit" class="btn btn-primary w-100" style="min-width:150px">
+                            <button type="submit" class="btn btn-primary w-100" style="min-width:150px" <?= $waLimitReached ? 'disabled' : '' ?>>
                                 <i class="bi bi-check-lg me-1"></i>Contatado
                             </button>
                         </form>
@@ -205,6 +243,19 @@ $waLink = $waPhone ? '#wa-open' : null;
                             <input type="hidden" name="action" value="skip">
                             <button type="submit" class="btn btn-outline-secondary w-100" style="min-width:120px">
                                 <i class="bi bi-skip-forward me-1"></i>Pular
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Não contatar (opt-out) -->
+                    <div class="col-12 col-sm-auto">
+                        <form method="post" action="/admin/prospects/<?= $prospect['id'] ?>/queue-action">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="action" value="opt_out">
+                            <button type="submit" class="btn btn-outline-dark w-100"
+                                    title="Use quando a pessoa pedir para não receber mais mensagens"
+                                    onclick="return confirm('Marcar \'' + <?= json_encode($pName) ?> + '\' como NÃO CONTATAR? Ele sai de todas as filas.')">
+                                <i class="bi bi-slash-circle me-1"></i>Não contatar
                             </button>
                         </form>
                     </div>
