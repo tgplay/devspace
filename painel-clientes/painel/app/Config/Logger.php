@@ -39,7 +39,10 @@ class Logger extends BaseConfig
      *
      * @var int|list<int>
      */
-    public $threshold = (ENVIRONMENT === 'production') ? 4 : 9;
+    // 4 = só erros e avisos, também em desenvolvimento: os logs ficam na pasta montada do Windows,
+    // e gravar as linhas de depuração a cada requisição deixava o painel lento.
+    // Para depurar, ponha logger.threshold = 9 no .env.
+    public $threshold = 4;
 
     /**
      * --------------------------------------------------------------------------
