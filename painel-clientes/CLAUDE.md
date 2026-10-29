@@ -204,3 +204,33 @@ docker compose exec -T db psql -U painel_user -d painel_clientes -c "SELECT * FR
 # Reset total (apaga volumes)
 docker compose down -v
 ```
+
+## Desempenho no Docker do Windows
+
+A pasta `painel/` vem do Windows montada no container, e cada acesso a arquivo custa ~10 ms (contra
+~0,1 ms dentro do container). Sem os ajustes abaixo, cada página levava de 3 a 8 s; com eles, ~0,3 s
+(medido em 29/10/2026, 4 páginas do admin).
+
+| ajuste | onde |
+|---|---|
+| `writable/session`, `writable/cache` e `writable/debugbar` em volumes do Docker | `docker-compose.yml` (`painel_session`, `painel_cache`, `painel_debugbar`) |
+| OPcache confere a data dos arquivos a cada 60 s (antes, 2 s) | `php/opcache-dev.ini` |
+| Log só com avisos e erros (nível 4) | `app/Config/Logger.php`; para depurar: `logger.threshold = 9` no `.env` |
+| Barra de depuração desligada por padrão | `app/Config/Filters.php`; para ligar: `debug.toolbar = true` no `.env` |
+| Cache de localização de arquivos do CI | `app/Config/Optimize.php` (`locatorCacheEnabled`) |
+
+Dois cuidados que esses ajustes trazem:
+
+```powershell
+# Editou um .php e a mudança não apareceu? O OPcache confere a cada 60 s; para aplicar na hora:
+docker compose exec php kill -USR2 1
+
+# Criou, renomeou ou moveu controller, view, comando ou config e o CI não achou? Limpe o cache:
+docker compose exec php php spark cache:clear
+```
+
+Depois de qualquer um dos dois comandos (ou de reiniciar o container), a **primeira** página leva ~10 s,
+porque os caches recomeçam vazios; as seguintes voltam a ~0,3 s.
+
+`uploads`, `logs` e `cnpj` continuam na pasta do Windows. A sessão agora vive no volume: `docker compose
+down -v` também desloga todo mundo.

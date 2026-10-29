@@ -20,6 +20,12 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./painel:/var/www/painel
+      # Gravados a cada requisição: ficam em volumes do Docker, porque escrever na pasta
+      # montada do Windows custa ~10 ms por arquivo e deixava cada página com 3 a 8 s.
+      - painel_session:/var/www/painel/writable/session
+      - painel_cache:/var/www/painel/writable/cache
+      - painel_debugbar:/var/www/painel/writable/debugbar
+      - ./php/opcache-dev.ini:/usr/local/etc/php/conf.d/zz-opcache-dev.ini:ro
     environment:
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GMAPS_API_KEY: ${GMAPS_API_KEY:-}
@@ -101,3 +107,6 @@ services:
 volumes:
   pgdata:
   mysqldata:
+  painel_session:
+  painel_cache:
+  painel_debugbar:

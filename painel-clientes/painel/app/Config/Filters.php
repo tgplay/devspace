@@ -65,9 +65,20 @@ class Filters extends BaseFilters
         'after' => [
             'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
-            'toolbar',     // Debug Toolbar
+            // 'toolbar' entra pelo construtor, só quando ligado no .env
         ],
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Barra de depuração desligada por padrão: no Docker do Windows ela deixava cada página
+        // ~1,5 s mais lenta (varre e grava dados a cada requisição). Para usar: debug.toolbar = true no .env.
+        if (filter_var(env('debug.toolbar', false), FILTER_VALIDATE_BOOLEAN)) {
+            $this->required['after'][] = 'toolbar';
+        }
+    }
 
     /**
      * List of filter aliases that are always
